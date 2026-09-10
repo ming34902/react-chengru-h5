@@ -90,7 +90,7 @@ export function FilterBar({
     onFilterClick,
 }: FilterBarProps) {
     return (
-        <div className="sticky top-14 z-20 bg-white/95 backdrop-blur-md border-b border-stone-100">
+        <div className="sticky sticky-fix-keep-px top-14 z-20 border-b border-stone-100 bg-white">
             <div className="flex items-center justify-between py-2 px-4 max-w-lg mx-auto">
                 <div className="flex items-center gap-4">
                     {sortOptions.map((option) => (
@@ -143,7 +143,7 @@ export function CategoryPage({ categories, onCategorySelect }: CategoryPageProps
 
     return (
         <div className="fixed inset-0 z-50 bg-white">
-            <div className="sticky top-0 z-10 bg-white border-b border-stone-100">
+            <div className="sticky sticky-fix-keep-px top-0 z-10 border-b border-stone-100 bg-white">
                 <div className="flex items-center justify-between h-14 px-4">
                     <span className="font-serif text-lg font-semibold text-stone-800">
                         选择分类

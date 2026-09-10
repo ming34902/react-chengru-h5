@@ -247,7 +247,7 @@ export function OrderTabs({ activeTab, onTabChange, counts }: OrderTabsProps) {
         },
     ];
     return (
-        <div className="sticky top-14 z-20 bg-white border-b border-stone-100">
+        <div className="sticky sticky-fix-keep-px top-14 z-20 border-b border-stone-100 bg-white">
             <div className="flex overflow-x-auto max-w-lg mx-auto">
                 {tabs.map((tab) => (
                     <button

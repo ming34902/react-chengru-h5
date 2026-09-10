@@ -420,7 +420,7 @@ export default function CartPage(props: WedaPageProps) {
             ) : (
                 <>
                     {/* Select All Header */}
-                    <div className="sticky top-14 z-20 bg-white/95 backdrop-blur-md border-b border-stone-100">
+                    <div className="sticky sticky-fix-keep-px top-14 z-20 border-b border-stone-100 bg-white">
                         <div className="flex items-center justify-between h-12 px-4 max-w-lg mx-auto">
                             <button
                                 type="button"

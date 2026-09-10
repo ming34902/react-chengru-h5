@@ -86,7 +86,7 @@ export function SearchBar({
     return (
         <div className="fixed inset-0 z-50 bg-background">
             {/* 搜索头部 */}
-            <div className="sticky top-0 z-10 bg-white border-b border-stone-100">
+            <div className="sticky sticky-fix-keep-px top-0 z-10 border-b border-stone-100 bg-white">
                 <div className="flex items-center gap-3 h-14 px-4 max-w-lg mx-auto">
                     <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-stone-100 rounded-full">
                         <Search className="w-4 h-4 text-stone-400" />

@@ -30,7 +30,7 @@ export function Header({
     searchPlaceholder = '搜索商品',
 }: HeaderProps) {
     return (
-        <header className="sticky top-0 z-40 border-b border-stone-100 bg-white/100 backdrop-blur-md">
+        <header className="sticky sticky-fix-keep-px top-0 z-40 border-b border-stone-100 bg-white">
             <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
                 {showBack ? (
                     <button

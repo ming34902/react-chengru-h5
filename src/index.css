@@ -74,3 +74,33 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    /**
+     * 吸顶栏修复（防抖动 + 消除顶部 1px 缝隙）
+     *
+     * 问题：项目按 px 书写、由 postcss-mobile-forever 统一转 vw（如 h-14 → 14.93333vw），
+     * 会产生小数像素；配合半透明背景 + backdrop-blur，滚动时吸顶栏顶部会出现约 1px 的缝隙，
+     * 把下层滚动内容透出来（首页搜索 header、商品页筛选栏、购物车全选栏等）。
+     *
+     * 方案：
+     * 1. 独立合成层（will-change/translateZ）：吸顶元素按整数设备像素对齐，消除抖动与露缝
+     * 2. 不透明兜底背景：即使存在亚像素误差，也只会露出白底而不是下层内容（可被工具类覆盖）
+     * 3. ::before 向上多覆盖 1px：解决上下相邻两个吸顶栏之间（如 Header + 筛选栏）的接缝
+     */
+    .sticky-fix-keep-px {
+        background-color: #fff;
+        will-change: transform;
+        transform: translateZ(0);
+    }
+
+    .sticky-fix-keep-px::before {
+        position: absolute;
+        top: -1px;
+        right: 0;
+        left: 0;
+        height: 1px;
+        background-color: inherit;
+        content: '';
+    }
+}
