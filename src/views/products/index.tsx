@@ -40,7 +40,10 @@ export default function ProductsPage(props: WedaPageProps) {
     const $w = useWeda(props.$w);
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
     const [showSearch, setShowSearch] = useState(false);
-    const [activeCategory, setActiveCategory] = useState('all');
+    // 支持从首页分类入口带参进入（/products?category=xxx），首次渲染即选中对应分类
+    const [activeCategory, setActiveCategory] = useState<string>(
+        () => ($w.page.dataset.params?.category as string | undefined) ?? 'all',
+    );
     const [activeSort, setActiveSort] = useState('recommended');
     const [searchQuery, setSearchQuery] = useState('');
 

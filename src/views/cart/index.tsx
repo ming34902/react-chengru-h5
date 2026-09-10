@@ -431,7 +431,9 @@ export default function CartPage(props: WedaPageProps) {
                                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selectedItems.length === cartItems.length ? 'bg-primary-500 border-primary-500' : 'border-stone-300'}`}
                                 >
                                     {selectedItems.length === cartItems.length && (
-                                        <div className="w-2.5 h-2.5 rounded-full bg-transparent" />
+                                        <span className="text-xs leading-none font-bold text-white">
+                                            ✓
+                                        </span>
                                     )}
                                 </div>
                                 <span className="text-sm text-stone-600">全选</span>

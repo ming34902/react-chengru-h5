@@ -39,7 +39,9 @@ export default function MemberPage(props: WedaPageProps) {
     // 获取当前用户手机号
     const currentUser = props.$w?.auth?.currentUser;
     const userPhone = currentUser?.name || currentUser?.phone || currentUser?.userId || '';
-    const isLoggedIn = !!userPhone;
+    // H5 独立运行时 $w.auth.currentUser 为空，额外用本地登录态兜底（登录/注册成功后置为 true）
+    const [localLoggedIn, setLocalLoggedIn] = useState<boolean>(false);
+    const isLoggedIn = !!userPhone || localLoggedIn;
 
     // 查询会员数据
     const fetchMemberData = useCallback(async () => {
@@ -214,6 +216,7 @@ export default function MemberPage(props: WedaPageProps) {
                 // 新用户，创建会员
                 await createMember(phone);
             }
+            setLocalLoggedIn(true);
             setShowLogin(false);
             toast({
                 title: '登录成功',
@@ -268,6 +271,7 @@ export default function MemberPage(props: WedaPageProps) {
 
             // 创建新会员
             await createMember(phone, nickname);
+            setLocalLoggedIn(true);
             setShowRegister(false);
             setShowLogin(false);
             toast({
@@ -354,6 +358,7 @@ export default function MemberPage(props: WedaPageProps) {
                 break;
             case 'logout':
                 setUser(null);
+                setLocalLoggedIn(false);
                 setStats({
                     coupons: 0,
                     points: 0,

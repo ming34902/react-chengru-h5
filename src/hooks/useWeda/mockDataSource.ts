@@ -233,6 +233,26 @@ export const mockMembers: MemberRecord[] = [
     },
 ];
 
+/** 从低代码查询参数里取出商品分类 / 关键字（兼容 query 与 filter.where.$and 两种写法） */
+function pickMockProductFilter(params?: WedaRecord): { category?: string; keyword?: string } {
+    const where: WedaRecord = params?.query ?? params?.filter?.where ?? params?.filter ?? {};
+    const result: { category?: string; keyword?: string } = {};
+
+    const readCondition = (condition: WedaRecord) => {
+        const category = condition?.category?.$eq;
+        if (category !== undefined) result.category = String(category);
+        const keyword = condition?.name?.$search ?? condition?.name?.$eq;
+        if (keyword !== undefined) result.keyword = String(keyword);
+    };
+
+    if (Array.isArray(where.$and)) {
+        (where.$and as WedaRecord[]).forEach(readCondition);
+    }
+    readCondition(where);
+
+    return result;
+}
+
 /**
  * 兜底数据源调用
  * 写操作（新增/更新/删除）直接视为成功；读操作返回 mock 数据
@@ -261,7 +281,15 @@ export function mockCallDataSource<T = WedaRecord>({
             const item = mockProducts.find((product) => product._id === id || product.id === id);
             return Promise.resolve({ data: item as unknown as T } as WedaDataSourceResult<T>);
         }
-        return Promise.resolve(wrapResult<T>(mockProducts));
+        // 按分类 / 关键字过滤，让「首页分类 → 商品列表」的联动在 mock 下也生效
+        const { category, keyword } = pickMockProductFilter(params);
+        const list = mockProducts.filter((product) => {
+            const matchCategory =
+                !category || category === 'all' ? true : product.category === category;
+            const matchKeyword = !keyword ? true : (product.name ?? '').includes(keyword);
+            return matchCategory && matchKeyword;
+        });
+        return Promise.resolve(wrapResult<T>(list));
     }
 
     if (dataSourceName === 'shop_cart') {

@@ -84,7 +84,9 @@ export function CartItem({
                             isSelected ? 'bg-primary-500 border-primary-500' : 'border-stone-300'
                         }`}
                     >
-                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-transparent" />}
+                        {isSelected && (
+                            <span className="text-xs leading-none font-bold text-white">✓</span>
+                        )}
                     </div>
                 </button>
 
