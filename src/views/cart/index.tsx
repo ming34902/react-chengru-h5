@@ -425,13 +425,13 @@ export default function CartPage(props: WedaPageProps) {
                             <button
                                 type="button"
                                 onClick={selectAll}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 bg-transparent"
                             >
                                 <div
                                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selectedItems.length === cartItems.length ? 'bg-primary-500 border-primary-500' : 'border-stone-300'}`}
                                 >
                                     {selectedItems.length === cartItems.length && (
-                                        <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                                        <div className="w-2.5 h-2.5 rounded-full bg-transparent" />
                                     )}
                                 </div>
                                 <span className="text-sm text-stone-600">全选</span>
@@ -443,7 +443,7 @@ export default function CartPage(props: WedaPageProps) {
                     </div>
 
                     {/* Cart Items */}
-                    <main className="max-w-lg mx-auto px-4 py-4 space-y-3">
+                    <main className="max-w-lg mx-auto px-4 py-4 space-y-3 pb-40">
                         {cartItems.map((item) => (
                             <CartItem
                                 key={item.id}

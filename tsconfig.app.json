@@ -34,6 +34,6 @@
             "@/*": ["src/*"]
         }
     },
-    "include": ["**/*.ts", "src/**/*.d.ts", "**/*.tsx"],
+    "include": ["**/*.ts", "src/**/*.d.ts", "**/*.tsx", "src/views/home/index.jsx", "src/views/checkout/index.jsx"],
     "exclude": ["node_modules", "dist", "dist-*"]
 }

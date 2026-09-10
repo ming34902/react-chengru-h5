@@ -91,14 +91,14 @@ export function FilterBar({
 }: FilterBarProps) {
     return (
         <div className="sticky top-14 z-20 bg-white/95 backdrop-blur-md border-b border-stone-100">
-            <div className="flex items-center justify-between h-12 px-4 max-w-lg mx-auto">
+            <div className="flex items-center justify-between py-2 px-4 max-w-lg mx-auto">
                 <div className="flex items-center gap-4">
                     {sortOptions.map((option) => (
                         <button
                             type="button"
                             key={option.id}
                             onClick={() => onSortChange?.(option.id)}
-                            className={`text-sm font-medium transition-colors ${
+                            className={`text-sm  px-2 bg-transparent font-medium transition-colors ${
                                 activeSort === option.id ? 'text-primary-600' : 'text-stone-500'
                             }`}
                         >
@@ -114,7 +114,7 @@ export function FilterBar({
                 <button
                     type="button"
                     onClick={onFilterClick}
-                    className="flex items-center gap-1 text-sm text-stone-500 hover:text-primary-600 transition-colors"
+                    className="w-16 px-2 h-8 flex-shrink-0 flex items-center gap-1 rounded-md bg-gray-70/95 text-sm text-stone-500 hover:text-primary-600 transition-colors"
                 >
                     <span>筛选</span>
                     <ChevronRight className="w-4 h-4" />

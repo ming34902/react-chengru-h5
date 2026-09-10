@@ -432,7 +432,7 @@ export default function MemberPage(props: WedaPageProps) {
                             <button
                                 type="button"
                                 onClick={() => setShowRegister(true)}
-                                className="px-8 py-2.5 border border-orange-500 text-orange-500 font-semibold rounded-full"
+                                className="px-8 py-2.5 bg-transparent border border-orange-500 text-orange-500 font-semibold rounded-full"
                             >
                                 注册
                             </button>

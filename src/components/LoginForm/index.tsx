@@ -93,10 +93,10 @@ export function LoginForm({
             </button>
 
             <div className="mt-4 flex items-center justify-between text-xs text-stone-400">
-                <button type="button" onClick={onForgotPassword} className="hover:text-stone-600">
+                <button type="button" onClick={onForgotPassword} className="bg-transparent hover:text-stone-600">
                     忘记密码
                 </button>
-                <button type="button" onClick={onRegister} className="hover:text-stone-600">
+                <button type="button" onClick={onRegister} className="bg-transparent hover:text-stone-600">
                     还没有账号？去注册
                 </button>
             </div>

@@ -77,14 +77,14 @@ export function CartItem({
                 <button
                     type="button"
                     onClick={() => onToggleSelect(item.id)}
-                    className="flex-shrink-0 flex items-center justify-center pt-6"
+                    className="flex-shrink-0 flex items-center justify-center bg-transparent"
                 >
                     <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                             isSelected ? 'bg-primary-500 border-primary-500' : 'border-stone-300'
                         }`}
                     >
-                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-transparent" />}
                     </div>
                 </button>
 
@@ -122,7 +122,8 @@ export function CartItem({
                                 </span>
                             )}
                         </div>
-
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
                         {/* 数量控制 */}
                         <div className="flex items-center gap-1 bg-stone-50 rounded-lg">
                             <button
@@ -145,12 +146,11 @@ export function CartItem({
                         </div>
                     </div>
                 </div>
-
                 {/* 删除 */}
                 <button
                     type="button"
                     onClick={handleRemove}
-                    className="flex-shrink-0 p-1 text-stone-400 hover:text-red-500 transition-colors"
+                    className="flex-shrink-0 p-1 bg-gray-70/95 rounded-md text-stone-400 hover:text-red-500 transition-colors"
                 >
                     <Trash2 size={18} />
                 </button>

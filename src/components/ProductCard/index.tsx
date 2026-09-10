@@ -66,7 +66,7 @@ export function ProductCard({
                 </div>
 
                 {/* Info Section */}
-                <div className="p-4">
+                <div className="p-2">
                     <h3 className="font-medium text-stone-800 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors">
                         {product.name}
                     </h3>
@@ -88,6 +88,8 @@ export function ProductCard({
                                 ? product.price.toFixed(2)
                                 : product.price}
                         </span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-2">
                         {product.originalPrice && product.originalPrice > product.price && (
                             <span className="text-sm text-stone-400 line-through">
                                 ¥

@@ -271,19 +271,19 @@ export default function HomePage(props: WedaPageProps) {
                 }
             />
 
-            <main className="max-w-lg mx-auto px-4 py-4 space-y-6">
+            <main className="max-w-lg mx-auto px-4 py-4 space-y-6 bg-gray-50/95">
                 {/* Banner */}
                 <Banner banners={banners} />
 
                 {/* Categories */}
                 <section>
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-4 gap-3 ">
                         {categories.map((category) => (
                             <button
                                 type="button"
                                 key={category.id}
                                 onClick={() => handleCategoryClick(category)}
-                                className="flex flex-col items-center gap-1.5 p-2"
+                                className="flex flex-col items-center rounded-md gap-1.5 p-2"
                             >
                                 <div className="w-12 h-12 bg-stone-100 rounded-xl flex items-center justify-center text-2xl">
                                     {category.icon}

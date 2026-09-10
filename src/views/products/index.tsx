@@ -255,7 +255,7 @@ export default function ProductsPage(props: WedaPageProps) {
         setSearchQuery('');
     };
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen bg-background pb-20 ">
             <Header
                 title="商品列表"
                 showSearch
@@ -263,7 +263,7 @@ export default function ProductsPage(props: WedaPageProps) {
                 searchPlaceholder={searchQuery || '搜索商品'}
             />
 
-            <div className="flex">
+            <div className="flex bg-gray-50/95">
                 {/* Category Sidebar */}
                 <CategorySidebar
                     activeCategory={activeCategory}
@@ -271,7 +271,7 @@ export default function ProductsPage(props: WedaPageProps) {
                 />
 
                 {/* Main Content */}
-                <div className="flex-1">
+                <div className="flex-1 bg-gray-50/95">
                     {/* Filter Bar */}
                     <FilterBar
                         sortOptions={sortOptions}
