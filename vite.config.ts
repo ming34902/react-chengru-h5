@@ -1,11 +1,12 @@
 import autoprefixer from 'autoprefixer';
+import tailwindcss from 'tailwindcss';
 import { type ConfigEnv, type UserConfig, defineConfig, loadEnv } from 'vite';
 
 import { getNowTime, pathResolve, wrapperEnv } from './build/utils';
 import { createBuild } from './build/vite/build';
 import { createVitePlugins } from './build/vite/plugin';
 import { postcssPxToViewProtConfig } from './build/vite/plugin/postcssPxToView';
-import { createProxy } from './build/vite/proxy';
+import { createProxy, parseProxyList } from './build/vite/proxy';
 import pkg from './package.json';
 
 // 应用信息
@@ -31,6 +32,8 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
     const viteEnv = wrapperEnv(env);
 
     const { VITE_PUBLIC_PATH, VITE_PORT } = viteEnv;
+    // 开发代理：从 .env 的 VITE_PROXY 读取（JSON 字符串）
+    const proxyList = parseProxyList(viteEnv.VITE_PROXY as unknown);
 
     return {
         base: VITE_PUBLIC_PATH,
@@ -54,6 +57,8 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
             },
             postcss: {
                 plugins: [
+                    // Tailwind CSS（配置文件：根目录 tailwind.config.ts）
+                    tailwindcss(),
                     autoprefixer({
                         // 用来给不同的浏览器自动添加相应前缀，如-webkit-，-moz-等等
                         overrideBrowserslist: [
@@ -73,7 +78,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
             open: true,
             hmr: true, // 开启热更新
             port: Number(VITE_PORT),
-            proxy: createProxy(),
+            proxy: createProxy(proxyList),
         },
         build: createBuild(viteEnv),
         esbuild: {

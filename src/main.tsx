@@ -2,6 +2,8 @@ import { createRoot } from 'react-dom/client';
 
 import { useThemeSync } from '@/hooks/useThemeSync';
 
+import '@/index.css';
+
 import App from './App.tsx';
 import VirtualStatusBar from './components/VirtualStatusBar/index.tsx';
 import { initAppPlugins } from './plugins/index.ts';

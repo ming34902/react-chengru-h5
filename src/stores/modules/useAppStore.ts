@@ -4,10 +4,15 @@ import { immer } from 'zustand/middleware/immer';
 
 interface State {
     openEruda: boolean;
+    /** 购物车商品数量（统一给底部 TabBar 显示角标） */
+    cartCount: number;
 }
 
 type Action = {
     setOpenEruda: (openEruda: boolean) => void;
+    setCartCount: (cartCount: number) => void;
+    /** 购物车数量 +1（加入购物车场景） */
+    incrementCartCount: () => void;
 };
 
 // 创建带有Immer中间件的zustand存储
@@ -16,9 +21,18 @@ export const useAppStore = create<State & Action>()(
         persist(
             (set) => ({
                 openEruda: false,
+                cartCount: 0,
                 setOpenEruda: (openEruda) =>
                     set((state) => {
                         state.openEruda = openEruda;
+                    }),
+                setCartCount: (cartCount) =>
+                    set((state) => {
+                        state.cartCount = cartCount;
+                    }),
+                incrementCartCount: () =>
+                    set((state) => {
+                        state.cartCount += 1;
                     }),
             }),
             {
@@ -27,6 +41,7 @@ export const useAppStore = create<State & Action>()(
                 partialize(state) {
                     return {
                         openEruda: state.openEruda,
+                        cartCount: state.cartCount,
                     };
                 },
             },

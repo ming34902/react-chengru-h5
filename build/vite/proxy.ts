@@ -5,7 +5,24 @@ import type { ProxyOptions } from 'vite';
 
 type ProxyItem = [string, string];
 
-type ProxyList = ProxyItem[];
+/** 代理配置列表 */
+export type ProxyList = ProxyItem[];
+
+/**
+ * 解析环境变量中的代理配置
+ * .env 中写法：VITE_PROXY=[["/api","http://localhost:3000/api"]]
+ */
+export function parseProxyList(value: unknown): ProxyList {
+    if (Array.isArray(value)) return value as ProxyList;
+    if (typeof value !== 'string' || !value.trim()) return [];
+
+    try {
+        const parsed: unknown = JSON.parse(value);
+        return Array.isArray(parsed) ? (parsed as ProxyList) : [];
+    } catch {
+        return [];
+    }
+}
 
 type ProxyTargetList = Record<string, ProxyOptions & { rewrite: (path: string) => string }>;
 

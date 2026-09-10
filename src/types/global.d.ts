@@ -18,4 +18,10 @@ declare interface Window {
     webkit: any;
     NativeCallJs: any;
     VConsole: any;
+    /** 原生/微信容器注入的 JSBridge（示例：@/components/CartItem 中使用） */
+    __wx__?: {
+        utils: {
+            navigateTo: (options: { pageId: string }) => void;
+        };
+    };
 }

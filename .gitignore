@@ -66,9 +66,15 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
+# 说明：.env / .env.development / .env.test / .env.production 存放项目公共配置（不含密钥），放开提交便于协作；
+#       私密变量请写在 .env.local / .env.*.local（仍被忽略）
 .env
 .env.*
 !.env.example
+!/.env
+!/.env.development
+!/.env.test
+!/.env.production
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

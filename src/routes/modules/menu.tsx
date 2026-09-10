@@ -16,14 +16,6 @@ const routes: routeItem[] = [
                 element: <Navigate replace to="/home" />,
             },
             {
-                path: '/home',
-                element: LazyLoad(lazy(() => import('@/views/home'))),
-                meta: {
-                    title: '首页',
-                    icon: 'i-mage:dashboard-2-fill',
-                },
-            },
-            {
                 path: '/example',
                 element: LazyLoad(lazy(() => import('@/views/example'))),
                 meta: {
