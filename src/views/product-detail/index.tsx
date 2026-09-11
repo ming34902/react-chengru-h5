@@ -9,6 +9,7 @@ import { useToast } from '@/components/Toast';
 
 import { selectIsLoggedIn, useUserStore } from '@/stores';
 
+import { addCartItem, toCartItem } from '@/utils/cartStorage';
 import { buildPath } from '@/utils/router';
 
 const productDetail = {
@@ -85,7 +86,9 @@ export default function ProductDetailPage() {
             [specName]: value,
         }));
     };
+    // 加入购物车（本地存储）
     const handleAddToCart = () => {
+        addCartItem(toCartItem(productDetail, quantity, Object.values(selectedSpecs).join(' ')));
         toast({
             title: '已加入购物车',
             description: `${productDetail.name} x ${quantity}`,

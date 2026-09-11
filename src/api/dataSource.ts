@@ -1,26 +1,21 @@
 import { httpCallDataSource } from '@/hooks/useWeda/httpDataSource';
-import { mockCallDataSource } from '@/hooks/useWeda/mockDataSource';
 
 import type { WedaDataSourceRequest, WedaDataSourceResult, WedaRecord } from '@/types/weda';
 
 /**
- * 数据源适配层（页面直接调用）
+ * 数据源适配层（页面统一入口）
  *
- * 原来低代码页面的调用方式是 `$w.cloud.callDataSource({ dataSourceName, methodName, params })`，
- * 现在页面统一改为调用这里的 callDataSource：由 VITE_USE_MOCK 决定走本地 mock 还是真实 HTTP。
+ * 页面原来调用 `$w.cloud.callDataSource({ dataSourceName, methodName, params })`，
+ * 现在统一调用这里的 callDataSource：内部把「数据源名 + 方法名」翻译成 src/api 里的 REST 接口
+ * （只使用 GET / POST），再由 src/api/request.ts 决定走本地 mock 还是真实 HTTP
+ * （Apifox 云 mock / 后端，切换只改环境变量）。
  *
- * 说明：src/hooks/useWeda 运行时保留（不再被页面使用），本文件与它共用同一套数据源实现。
+ * 说明：购物车不经过这里，由 src/utils/cartStorage.ts 的本地存储维护。
  */
-
-/** 是否使用本地 mock 数据（由 .env 的 VITE_USE_MOCK 控制） */
-export function isMockDataSource(): boolean {
-    const flag = import.meta.env.VITE_USE_MOCK as unknown;
-    return flag === true || flag === 'true';
-}
-
-/** 统一数据源调用：本地 mock / 真实 HTTP 由环境变量切换 */
 export function callDataSource<T = WedaRecord>(
     request: WedaDataSourceRequest,
 ): Promise<WedaDataSourceResult<T>> {
-    return isMockDataSource() ? mockCallDataSource<T>(request) : httpCallDataSource<T>(request);
+    return httpCallDataSource<T>(request);
 }
+
+export { isLocalMock, isLocalMock as isMockDataSource } from './request';

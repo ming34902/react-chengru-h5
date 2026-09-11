@@ -17,7 +17,8 @@ import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
 import { callDataSource } from '@/api';
-import type { OrderItemRecord, OrderRecord } from '@/types/weda';
+import type { OrderItemModel } from '@/types/api';
+import type { OrderRecord } from '@/types/weda';
 
 export default function OrderDetailPage() {
     const navigate = useNavigate();
@@ -54,33 +55,31 @@ export default function OrderDetailPage() {
             if (result?.data && result.data.length > 0) {
                 const item = result.data[0];
                 const orderData = {
-                    id: item._id,
-                    orderNo: item.order_no || '',
+                    id: item.id ?? item._id,
+                    orderNo: item.orderNo || '',
                     status: item.status || 'pending',
-                    items: (item.items || []).map((i: OrderItemRecord) => ({
-                        id: i.product_id,
-                        name: i.product_name,
+                    items: (item.items || []).map((i: OrderItemModel) => ({
+                        id: i.productId ?? i.id,
+                        name: i.name,
                         price: i.price,
-                        originalPrice: i.original_price,
+                        originalPrice: i.originalPrice,
                         quantity: i.quantity,
-                        image: i.product_image,
+                        image: i.image,
                         spec: i.spec,
                     })),
-                    subtotal: item.total_amount - (item.freight || 0),
+                    subtotal: (item.totalAmount || 0) - (item.freight || 0),
                     freight: item.freight || 0,
-                    discount: item.discount_amount || 0,
-                    total: item.pay_amount || item.total_amount || 0,
+                    discount: 0,
+                    total: item.payAmount ?? item.totalAmount ?? 0,
                     address: item.address || {},
-                    payMethod: item.pay_method || '',
-                    payTime: item.pay_time || '',
-                    expressNo: item.express_no || '',
-                    expressCompany: item.express_company || '',
+                    payMethod: item.payMethod || '',
+                    payTime: item.payTime || '',
+                    expressNo: '',
+                    expressCompany: '',
                     remark: item.remark || '',
-                    createTime: item.createdAt
-                        ? new Date(item.createdAt).toLocaleString('zh-CN')
-                        : '',
-                    shipTime: item.ship_time || '',
-                    receiveTime: item.receive_time || '',
+                    createTime: item.createTime || '',
+                    shipTime: '',
+                    receiveTime: item.receiveTime || '',
                 };
                 setOrder(orderData);
             } else {

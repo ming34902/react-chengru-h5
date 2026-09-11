@@ -4,7 +4,7 @@ import { useToast } from '@/components/Toast';
 
 import { selectCollection, selectIsLoggedIn, useUserStore } from '@/stores';
 
-import type { FavoriteProduct } from '@/types/user';
+import type { FavoriteModel } from '@/types/api';
 import type { ProductRecord } from '@/types/weda';
 
 /**
@@ -34,7 +34,7 @@ export function useFavorite() {
      * 同一个商品二次点击即取消收藏（store 内部按 id 判断）
      */
     const toggleFavorite = useCallback(
-        (product: FavoriteProduct) => {
+        (product: FavoriteModel) => {
             if (!isLoggedIn) {
                 toast({
                     title: '请先登录',

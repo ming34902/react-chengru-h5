@@ -9,10 +9,11 @@ import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
 import { useFavorite } from '@/hooks/useFavorite';
-import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
+import { useAppStore } from '@/stores';
 
 import { callDataSource } from '@/api';
 import type { ProductRecord, WedaRecord } from '@/types/weda';
+import { addCartItem, toCartItem } from '@/utils/cartStorage';
 import { buildPath } from '@/utils/router';
 
 // 分类数据（静态定义）
@@ -89,8 +90,6 @@ const banners = [
 export default function HomePage() {
     const navigate = useNavigate();
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
-    /** 本地登录态（由 useUserStore 管理，登录成功后刷新页面不丢失） */
-    const isLoggedInFromStore = useUserStore(selectIsLoggedIn);
     /** 商品收藏（收藏数据维护在 store 的 user.collection 中） */
     const { isFavorite, toggleFavorite } = useFavorite();
     const { toast } = useToast();
@@ -164,12 +163,12 @@ export default function HomePage() {
                 },
             });
 
-            // 转换数据格式
+            // 转换数据格式（接口返回的字段为 CamelCase，兼容旧的 _id 写法）
             const transformProduct = (item: WedaRecord) => ({
-                id: item._id,
+                id: item.id ?? item._id,
                 name: item.name,
                 price: item.price,
-                originalPrice: item.original_price,
+                originalPrice: item.originalPrice,
                 image: item.image,
                 rating: item.rating || 4.5,
                 sales: item.sales || 0,
@@ -211,32 +210,15 @@ export default function HomePage() {
         });
         navigate(buildPath('/products', { search: query }));
     };
-    const handleAddToCart = async (product: ProductRecord) => {
-        try {
-            // 检查是否登录（登录态由 useUserStore 管理）
-            if (!isLoggedInFromStore) {
-                toast({
-                    title: '提示',
-                    description: '请先登录后再添加购物车',
-                    variant: 'destructive',
-                });
-                navigate('/member');
-                return;
-            }
-            incrementCartCount();
-            toast({
-                title: '已加入购物车',
-                description: product.name,
-                variant: 'success',
-            });
-        } catch (error) {
-            console.error('加入购物车失败:', error);
-            toast({
-                title: '加入购物车失败',
-                description: (error as Error).message || '请重试',
-                variant: 'destructive',
-            });
-        }
+    const handleAddToCart = (product: ProductRecord) => {
+        // 加入购物车（本地存储，无需登录）
+        addCartItem(toCartItem(product, 1, '默认规格'));
+        incrementCartCount();
+        toast({
+            title: '已加入购物车',
+            description: product.name,
+            variant: 'success',
+        });
     };
     const handleProductClick = (product: ProductRecord) => {
         navigate(buildPath('/product-detail', { id: product.id }));

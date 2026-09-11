@@ -9,10 +9,11 @@ import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
 import { useFavorite } from '@/hooks/useFavorite';
-import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
+import { useAppStore } from '@/stores';
 
 import { callDataSource } from '@/api';
 import type { ProductRecord } from '@/types/weda';
+import { addCartItem, toCartItem } from '@/utils/cartStorage';
 import { buildPath } from '@/utils/router';
 
 // 排序选项
@@ -43,8 +44,6 @@ export default function ProductsPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
-    /** 本地登录态（由 useUserStore 管理） */
-    const isLoggedIn = useUserStore(selectIsLoggedIn);
     /** 商品收藏（收藏数据维护在 store 的 user.collection 中） */
     const { isFavorite, toggleFavorite } = useFavorite();
     const [showSearch, setShowSearch] = useState(false);
@@ -166,12 +165,12 @@ export default function ProductsPage() {
                     },
                 });
                 if (result) {
-                    // 转换数据格式
+                    // 转换数据格式（接口返回的字段为 CamelCase，兼容旧的 _id 写法）
                     const formattedProducts = (result.records || []).map((item) => ({
-                        id: item._id,
+                        id: item.id ?? item._id,
                         name: item.name,
                         price: item.price,
-                        originalPrice: item.original_price,
+                        originalPrice: item.originalPrice,
                         image: item.image,
                         rating: item.rating || 5,
                         sales: item.sales || 0,
@@ -220,18 +219,9 @@ export default function ProductsPage() {
         }
     };
 
-    // 处理添加购物车
+    // 处理添加购物车（本地存储，无需登录）
     const handleAddToCart = (product: ProductRecord) => {
-        // 检查是否登录（登录态由 useUserStore 管理）
-        if (!isLoggedIn) {
-            toast({
-                title: '请先登录',
-                description: '登录后可将商品加入购物车',
-                variant: 'destructive',
-            });
-            navigate('/member');
-            return;
-        }
+        addCartItem(toCartItem(product, 1, '默认规格'));
         incrementCartCount();
         toast({
             title: '已加入购物车',

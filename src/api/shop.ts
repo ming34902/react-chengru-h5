@@ -1,75 +1,63 @@
 import type {
-    CartRecord,
-    MemberRecord,
-    OrderItemRecord,
-    OrderRecord,
-    ProductRecord,
-} from '@/types/weda';
+    CreateUserRequest,
+    OrderCreateRequest,
+    OrderModel,
+    OrderPayRequest,
+    OrderQuery,
+    OrderRemoveRequest,
+    OrderStatusRequest,
+    PageResult,
+    ProductModel,
+    ProductQuery,
+    RemoveResult,
+    UpdateUserRequest,
+    UserInfoQuery,
+    UserModel,
+} from '@/types/api';
 
 import { http } from './request';
 
-/** 分页返回结构（与后端约定） */
-export interface PageResult<T> {
-    records: T[];
-    total: number;
-    pageNumber?: number;
-    pageSize?: number;
-}
-
-/** 商品列表查询参数 */
-export interface ProductQuery {
-    category?: string;
-    keyword?: string;
-    /** recommended | sales | price_asc | price_desc | newest */
-    sort?: string;
-    isFeatured?: boolean;
-    isOnSale?: boolean;
-    pageNumber?: number;
-    pageSize?: number;
-}
+/**
+ * 商城接口定义（只使用 GET / POST）
+ *
+ * 路径、参数、返回结构均与 docs/apifox.json 保持一致：
+ * - 本地 mock（src/mock/server.ts）与 Apifox 云 mock 使用同一套定义
+ * - 因此切换 mock 来源时，页面代码无需改动，只需要调整 .env（VITE_USE_MOCK / VITE_GLOB_API_URL）
+ * - 购物车不在此处定义：由前端 localStorage 维护（src/utils/cartStorage.ts）
+ */
+export type { PageResult } from '@/types/api';
 
 /** 商品接口 */
 export const productApi = {
-    list: (params: ProductQuery = {}) =>
-        http.get<PageResult<ProductRecord>>('/shop/products', params),
-    detail: (id: string | number) => http.get<ProductRecord>(`/shop/products/${id}`),
-};
-
-/** 购物车接口 */
-export const cartApi = {
-    list: (userPhone?: string) => http.get<PageResult<CartRecord>>('/shop/cart', { userPhone }),
-    create: (record: Partial<CartRecord>) => http.post<CartRecord>('/shop/cart', record),
-    update: (id: string | number, record: Partial<CartRecord>) =>
-        http.put<CartRecord>(`/shop/cart/${id}`, record),
-    remove: (id: string | number) => http.delete<void>(`/shop/cart/${id}`),
+    /** 商品列表 GET /products */
+    list: (params: ProductQuery = {}) => http.get<PageResult<ProductModel>>('/products', params),
+    /** 商品详情 GET /products/detail?id= */
+    detail: (id: string | number) => http.get<ProductModel>('/products/detail', { id }),
 };
 
 /** 订单接口 */
 export const orderApi = {
-    list: (
-        params: {
-            status?: string;
-            userPhone?: string;
-            pageNumber?: number;
-            pageSize?: number;
-        } = {},
-    ) => http.get<PageResult<OrderRecord>>('/shop/orders', params),
-    detail: (orderNo: string) => http.get<OrderRecord>(`/shop/orders/${orderNo}`),
-    create: (payload: {
-        items: OrderItemRecord[];
-        address?: Record<string, unknown>;
-        remark?: string;
-    }) => http.post<OrderRecord>('/shop/orders', payload),
-    updateStatus: (orderNo: string, status: string) =>
-        http.put<OrderRecord>(`/shop/orders/${orderNo}`, { status }),
-    remove: (orderNo: string) => http.delete<void>(`/shop/orders/${orderNo}`),
+    /** 订单创建 POST /orders/create */
+    create: (payload: OrderCreateRequest) => http.post<OrderModel>('/orders/create', payload),
+    /** 订单查询（列表）GET /orders */
+    list: (params: OrderQuery = {}) => http.get<PageResult<OrderModel>>('/orders', params),
+    /** 订单查询（详情）GET /orders/detail?orderNo= */
+    detail: (orderNo: string) => http.get<OrderModel>('/orders/detail', { orderNo }),
+    /** 订单支付 POST /orders/pay */
+    pay: (payload: OrderPayRequest) => http.post<OrderModel>('/orders/pay', payload),
+    /** 更新订单状态（取消 / 确认收货等）POST /orders/update-status */
+    updateStatus: (payload: OrderStatusRequest) =>
+        http.post<OrderModel>('/orders/update-status', payload),
+    /** 删除订单 POST /orders/remove */
+    remove: (payload: OrderRemoveRequest) => http.post<RemoveResult>('/orders/remove', payload),
 };
 
-/** 会员接口 */
-export const memberApi = {
-    list: (params: { phone?: string; nickName?: string } = {}) =>
-        http.get<PageResult<MemberRecord>>('/shop/members', params),
-    create: (record: Partial<MemberRecord>) => http.post<MemberRecord>('/shop/members', record),
-    update: (id: string | number, record: Partial<MemberRecord>) =>
-        http.put<MemberRecord>(`/shop/members/${id}`, record),
+/** 用户接口（个人中心） */
+export const userApi = {
+    /** 获取用户信息 GET /user/info?id=|phone= */
+    info: (params: UserInfoQuery = {}) => http.get<UserModel>('/user/info', params),
+    /** 创建用户 POST /user/create */
+    create: (payload: CreateUserRequest) => http.post<UserModel>('/user/create', payload),
+    /** 更新用户信息 POST /user/update */
+    update: (payload: UpdateUserRequest) => http.post<UserModel>('/user/update', payload),
 };

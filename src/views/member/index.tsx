@@ -20,7 +20,8 @@ import { useToast } from '@/components/Toast';
 
 import { selectCollection, selectIsLoggedIn, useUserStore } from '@/stores';
 
-import { authApi, callDataSource } from '@/api';
+import { authApi } from '@/api';
+import type { UserModel } from '@/types/api';
 import { logoutUser } from '@/utils/auth';
 
 export default function MemberPage() {
@@ -73,119 +74,35 @@ export default function MemberPage() {
      */
     const memberCardLoading = loading && !isLoggedInFromStore;
 
-    // 查询会员数据
+    // 查询会员数据（GET /user/info：昵称、头像、等级、积分、优惠券、收藏）
     const fetchMemberData = useCallback(async () => {
         if (!userPhone) return;
         setLoading(true);
         try {
-            const result = await callDataSource({
-                dataSourceName: 'shop_member',
-                methodName: 'wedaGetRecordsV2',
-                params: {
-                    filter: {
-                        where: {
-                            $or: [
-                                {
-                                    phone: {
-                                        $eq: userPhone,
-                                    },
-                                },
-                                {
-                                    nick_name: {
-                                        $eq: userPhone,
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    select: {
-                        $master: true,
-                    },
-                    pageSize: 1,
-                    pageNumber: 1,
-                },
+            const info = await authApi.getUserInfo({ phone: userPhone });
+            setUser({
+                id: info.id,
+                nickName: info.nickname || '用户' + userPhone.slice(-4),
+                phone: info.phone || userPhone,
+                avatarUrl: info.avatar,
+                vipLevel: info.vipLevel || 0,
             });
-            if (result.records && result.records.length > 0) {
-                const memberData = result.records[0];
-                setUser({
-                    id: memberData._id,
-                    nickName: memberData.nick_name || '用户' + userPhone.slice(-4),
-                    phone: memberData.phone || userPhone,
-                    avatarUrl: memberData.avatar_url,
-                    vipLevel: memberData.vip_level || 0,
-                });
-                setStats({
-                    coupons: memberData.coupons || 0,
-                    points: memberData.points || 0,
-                    favorites: memberData.favorites || 0,
-                    views: memberData.views || 0,
-                });
-            } else {
-                // 用户不存在，设置为新用户
-                setUser({
-                    id: null,
-                    nickName: '新用户' + userPhone.slice(-4),
-                    phone: userPhone,
-                    avatarUrl: null,
-                    vipLevel: 0,
-                });
-                setStats({
-                    coupons: 0,
-                    points: 0,
-                    favorites: 0,
-                    views: 0,
-                });
-            }
+            setStats({
+                coupons: info.coupons || 0,
+                points: info.points || 0,
+                favorites: info.collection?.length ?? 0,
+                views: info.views || 0,
+            });
         } catch (error) {
-            console.error('查询会员数据失败:', error);
-            toast({
-                title: '加载失败',
-                description: '获取会员信息失败，请稍后重试',
-                variant: 'destructive',
-            });
+            // 用户不存在时回退到 store 中的登录信息（displayUser 有兜底）
+            console.warn('查询会员数据失败:', error);
+            setUser(null);
         } finally {
             setLoading(false);
         }
-    }, [userPhone, toast]);
+    }, [userPhone]);
 
-    // 创建新会员
-    const createMember = useCallback(async (phone: string, nickname?: string) => {
-        try {
-            const result = await callDataSource({
-                dataSourceName: 'shop_member',
-                methodName: 'wedaCreateV2',
-                params: {
-                    data: {
-                        nick_name: nickname || '用户' + phone.slice(-4),
-                        phone: phone,
-                        vip_level: 0,
-                        points: 100,
-                        // 新用户赠送100积分
-                        coupons: 1,
-                        // 新用户赠送1张优惠券
-                        favorites: 0,
-                        views: 0,
-                        avatar_url: null,
-                        addresses: [],
-                    },
-                },
-            });
-            setUser((prev) => ({
-                ...prev,
-                id: result.id,
-                nickName: nickname || '用户' + phone.slice(-4),
-            }));
-            setStats((prev) => ({
-                ...prev,
-                coupons: 1,
-                points: 100,
-            }));
-            return result.id;
-        } catch (error) {
-            console.error('创建会员失败:', error);
-            throw error;
-        }
-    }, []);
+    // 说明：创建用户由接口完成（POST /user/create，见 handleLogin），这里不再单独维护本地创建逻辑
 
     // 初始化加载
     useEffect(() => {
@@ -207,51 +124,36 @@ export default function MemberPage() {
         setLoading(true);
         try {
             const phone = formData.phone;
+            let info: UserModel;
 
-            // 先查询是否存在该手机号的会员
-            const result = await callDataSource({
-                dataSourceName: 'shop_member',
-                methodName: 'wedaGetRecordsV2',
-                params: {
-                    filter: {
-                        where: {
-                            phone: {
-                                $eq: phone,
-                            },
-                        },
-                    },
-                    select: {
-                        $master: true,
-                    },
-                    pageSize: 1,
-                },
-            });
-            if (result.records && result.records.length > 0) {
-                // 已有会员，直接登录
-                const memberData = result.records[0];
-                setUser({
-                    id: memberData._id,
-                    nickName: memberData.nick_name || '用户' + phone.slice(-4),
-                    phone: memberData.phone,
-                    avatarUrl: memberData.avatar_url,
-                    vipLevel: memberData.vip_level || 0,
-                });
-                setStats({
-                    coupons: memberData.coupons || 0,
-                    points: memberData.points || 0,
-                    favorites: memberData.favorites || 0,
-                    views: memberData.views || 0,
-                });
-            } else {
-                // 新用户，创建会员
-                await createMember(phone);
+            try {
+                // 查询用户是否存在（GET /user/info）
+                info = await authApi.getUserInfo({ phone });
+            } catch {
+                // 未注册：创建用户（POST /user/create，新用户默认 100 积分 + 1 张优惠券）
+                info = await authApi.createUser({ phone, password: formData.password });
             }
-            // 伪造登录接口：返回本地模拟的 mock-token + 用户信息（登录态写入 store 并持久化）
+
+            // 登录（POST /auth/login）：token 由接口返回并写入 localStorage
             const loginResult = await authApi.login({
                 username: phone,
                 password: formData.password,
             });
             loginToStore(loginResult);
+
+            setUser({
+                id: info.id,
+                nickName: info.nickname || '用户' + phone.slice(-4),
+                phone: info.phone || phone,
+                avatarUrl: info.avatar,
+                vipLevel: info.vipLevel || 0,
+            });
+            setStats({
+                coupons: info.coupons || 0,
+                points: info.points || 0,
+                favorites: info.collection?.length ?? 0,
+                views: info.views || 0,
+            });
 
             setShowLogin(false);
             toast({
@@ -276,43 +178,28 @@ export default function MemberPage() {
             const phone = formData.phone;
             const nickname = formData.nickname;
 
-            // 检查是否已存在
-            const result = await callDataSource({
-                dataSourceName: 'shop_member',
-                methodName: 'wedaGetRecordsV2',
-                params: {
-                    filter: {
-                        where: {
-                            phone: {
-                                $eq: phone,
-                            },
-                        },
-                    },
-                    select: {
-                        $master: true,
-                    },
-                    pageSize: 1,
-                },
-            });
-            if (result.records && result.records.length > 0) {
-                toast({
-                    title: '该手机号已注册',
-                    description: '请直接登录',
-                    variant: 'destructive',
-                });
-                setShowRegister(false);
-                setShowLogin(true);
-                return;
-            }
-
-            // 创建新会员
-            await createMember(phone, nickname);
-            // 注册成功即登录：伪造接口返回 mock-token 并写入 store
-            const loginResult = await authApi.login({
-                username: phone,
+            // 注册（POST /auth/register）：手机号已存在时接口返回错误；注册成功即返回 token
+            const loginResult = await authApi.register({
+                phone,
+                nickname,
                 password: formData.password,
             });
             loginToStore(loginResult);
+
+            const info = loginResult.user;
+            setUser({
+                id: info.id,
+                nickName: info.nickname || nickname || '用户' + phone.slice(-4),
+                phone: info.phone || phone,
+                avatarUrl: info.avatar,
+                vipLevel: info.vipLevel || 0,
+            });
+            setStats({
+                coupons: info.coupons || 0,
+                points: info.points || 0,
+                favorites: info.collection?.length ?? 0,
+                views: info.views || 0,
+            });
 
             setShowRegister(false);
             setShowLogin(false);
@@ -339,10 +226,17 @@ export default function MemberPage() {
         }
         switch (id) {
             case 'address':
-                // 如果是新用户，先创建会员
+                // 新用户先创建用户（POST /user/create）
                 if (!user?.id) {
                     try {
-                        await createMember(userPhone);
+                        const info = await authApi.createUser({ phone: userPhone });
+                        setUser({
+                            id: info.id,
+                            nickName: info.nickname,
+                            phone: info.phone || userPhone,
+                            avatarUrl: info.avatar,
+                            vipLevel: info.vipLevel || 0,
+                        });
                         toast({
                             title: '已创建账户',
                             description: '正在跳转收货地址管理...',

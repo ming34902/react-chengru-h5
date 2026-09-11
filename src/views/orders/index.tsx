@@ -59,18 +59,18 @@ export default function OrdersPage() {
                 },
             });
             const orderList = (result?.data || []).map((item: WedaRecord) => ({
-                id: item._id,
-                orderNo: item.order_no || '',
+                id: item.id ?? item._id,
+                orderNo: item.orderNo || '',
                 status: item.status || 'pending',
                 items: item.items || [],
-                total: item.pay_amount || item.total_amount || 0,
+                total: item.payAmount ?? item.totalAmount ?? 0,
                 freight: item.freight || 0,
-                discountAmount: item.discount_amount || 0,
-                createTime: item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : '',
+                discountAmount: 0,
+                createTime: item.createTime || '',
                 address: item.address || {},
-                payMethod: item.pay_method || '',
-                expressNo: item.express_no || '',
-                expressCompany: item.express_company || '',
+                payMethod: item.payMethod || '',
+                expressNo: '',
+                expressCompany: '',
                 remark: item.remark || '',
             }));
             setOrders(orderList);

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -6,353 +5,71 @@ import { CartItem, CartSummary, EmptyCart } from '@/components/CartItem';
 import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
-import { useAppStore, useUserStore } from '@/stores';
+import { useAppStore } from '@/stores';
 
-import { callDataSource } from '@/api';
-import type { CartRecord } from '@/types/weda';
+import type { CartItemModel } from '@/types/api';
+import { readCart, removeCartItem, setAllSelected, updateCartItem } from '@/utils/cartStorage';
 import { buildPath } from '@/utils/router';
 
-// Mock 购物车数据（备用）
-const mockCartItems = [
-    {
-        _id: 'mock_cart_1',
-        product_id: 'mock_prod_1',
-        product_name: '2024新款韩版宽松休闲运动套装',
-        product_image:
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200&h=200&fit=crop',
-        price: 199.0,
-        original_price: 399.0,
-        quantity: 1,
-        spec: '黑色 M码',
-        is_selected: true,
-    },
-    {
-        _id: 'mock_cart_2',
-        product_id: 'mock_prod_2',
-        product_name: '玻尿酸保湿精华液 30ml',
-        product_image:
-            'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=200&h=200&fit=crop',
-        price: 89.0,
-        original_price: 0,
-        quantity: 2,
-        spec: '30ml/瓶',
-        is_selected: true,
-    },
-    {
-        _id: 'mock_cart_3',
-        product_id: 'mock_prod_3',
-        product_name: '智能运动手表 GPS定位',
-        product_image:
-            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop',
-        price: 1299.0,
-        original_price: 1999.0,
-        quantity: 1,
-        spec: '黑色 标准版',
-        is_selected: false,
-    },
-];
-
+/**
+ * 购物车页
+ *
+ * 数据完全由本地存储维护（localStorage，key: cart_items，见 src/utils/cartStorage.ts）：
+ * 读取 readCart、勾选/改数量 updateCartItem、全选 setAllSelected、删除 removeCartItem，
+ * 不调用任何接口（需求：购物车流程走本地 setStorage）。
+ */
 export default function CartPage() {
     const navigate = useNavigate();
-    const [cartItems, setCartItems] = useState<CartRecord[]>([]);
-    const [selectedItems, setSelectedItems] = useState<(string | number)[]>([]);
+    // 购物车数据以本地存储为唯一数据源，同步读取即可，无需 loading 态
+    const [cartItems, setCartItems] = useState<CartItemModel[]>(readCart);
+    const [selectedItems, setSelectedItems] = useState<(string | number)[]>(() =>
+        cartItems.filter((item) => item.selected !== false).map((item) => item.id),
+    );
     // 购物车数量统一由全局 store 管理（布局中的 TabBar 读取角标）
-    const cartCount = useAppStore((state) => state.cartCount);
-    const setCartCount = useAppStore((state) => state.setCartCount);
-    const [loading, setLoading] = useState(true);
-    const [initialLoad, setInitialLoad] = useState(true);
+    const syncCartCount = useAppStore((state) => state.setCartCount);
     const { toast } = useToast();
 
-    // 获取当前用户手机号（登录态由 useUserStore 管理）
-    const storeUser = useUserStore((state) => state.user);
-    const userPhone = storeUser?.phone || storeUser?.username || '';
-
-    // 查询真实购物车数据
-    const fetchCartItems = async () => {
-        if (!userPhone) {
-            // 未登录时使用本地存储
-            loadLocalCart();
-            return;
-        }
-        try {
-            setLoading(true);
-            const result = await callDataSource({
-                dataSourceName: 'shop_cart',
-                methodName: 'wedaGetRecordsV2',
-                params: {
-                    query: {
-                        user_phone: userPhone,
-                    },
-                    sort: {
-                        createdAt: -1,
-                    },
-                    limit: 100,
-                },
-            });
-            if (result?.data?.records && result.data.records.length > 0) {
-                // 转换为页面需要的格式
-                const records = (result.data.records || []) as CartRecord[];
-                const items = await Promise.all(
-                    records.map(async (record: CartRecord) => {
-                        // 查询商品详情
-                        let productInfo = {
-                            name: record.product_name || '',
-                            image: record.product_image || '',
-                            price: record.price || 0,
-                            original_price: record.original_price || 0,
-                        };
-                        if (record.product_id) {
-                            try {
-                                const productResult = await callDataSource({
-                                    dataSourceName: 'shop_product',
-                                    methodName: 'wedaGetItemV2',
-                                    params: {
-                                        query: {
-                                            _id: record.product_id,
-                                        },
-                                    },
-                                });
-                                if (productResult?.data) {
-                                    productInfo = {
-                                        name: productResult.data.name || record.product_name || '',
-                                        image:
-                                            productResult.data.image || record.product_image || '',
-                                        price: productResult.data.price || record.price || 0,
-                                        original_price:
-                                            productResult.data.original_price ||
-                                            record.original_price ||
-                                            0,
-                                    };
-                                }
-                            } catch (e) {
-                                console.log('获取商品详情失败', e);
-                            }
-                        }
-                        return {
-                            id: record._id,
-                            product_id: record.product_id,
-                            name: productInfo.name,
-                            price: productInfo.price,
-                            originalPrice: productInfo.original_price,
-                            image: productInfo.image,
-                            quantity: record.quantity || 1,
-                            spec: record.spec || '默认规格',
-                            is_selected: record.is_selected !== false,
-                        };
-                    }),
-                );
-                setCartItems(items as CartRecord[]);
-                setSelectedItems(
-                    items.filter((item) => item.is_selected).map((item) => String(item.id ?? '')),
-                );
-                setCartCount(items.length);
-                saveToLocalStorage(items as CartRecord[]);
-            } else {
-                // 无数据时加载本地存储
-                loadLocalCart();
-            }
-        } catch (error) {
-            console.log('查询购物车失败，使用本地数据', error);
-            loadLocalCart();
-        } finally {
-            setLoading(false);
-            setInitialLoad(false);
-        }
-    };
-
-    // 从本地存储加载购物车
-    const loadLocalCart = () => {
-        try {
-            const localData = localStorage.getItem('cart_items');
-            if (localData) {
-                const items = JSON.parse(localData) as CartRecord[];
-                setCartItems(items);
-                setSelectedItems(items.filter((item) => item.is_selected).map((item) => item.id));
-                setCartCount(items.length);
-            } else {
-                // 使用 mock 数据作为示例
-                setCartItems(
-                    mockCartItems.map((item) => ({
-                        id: item._id,
-                        product_id: item.product_id,
-                        name: item.product_name,
-                        price: item.price,
-                        originalPrice: item.original_price,
-                        image: item.product_image,
-                        quantity: item.quantity,
-                        spec: item.spec,
-                        is_selected: item.is_selected,
-                    })),
-                );
-                setSelectedItems(
-                    mockCartItems.filter((item) => item.is_selected).map((item) => item._id),
-                );
-                setCartCount(mockCartItems.length);
-            }
-        } catch (e) {
-            console.log('加载本地购物车失败', e);
-        }
-        setInitialLoad(false);
-    };
-
-    // 保存到本地存储
-    const saveToLocalStorage = (items: CartRecord[]) => {
-        try {
-            localStorage.setItem('cart_items', JSON.stringify(items));
-        } catch (e) {
-            console.log('保存本地购物车失败', e);
-        }
-    };
+    // 进入购物车时同步一次角标数量（以本地存储为准）
     useEffect(() => {
-        fetchCartItems();
-    }, [userPhone]);
+        syncCartCount(readCart().length);
+    }, [syncCartCount]);
 
-    // 切换选中状态
-    const toggleSelect = async (id: string | number) => {
+    // 切换选中状态（写入本地存储）
+    const toggleSelect = (id: string | number) => {
         const newSelected = selectedItems.includes(id)
             ? selectedItems.filter((i) => i !== id)
             : [...selectedItems, id];
         setSelectedItems(newSelected);
 
-        // 更新本地数据
-        const updatedItems = cartItems.map((item) => ({
-            ...item,
-            is_selected: newSelected.includes(item.id),
-        }));
-        saveToLocalStorage(updatedItems);
-
-        // 如果已登录，同步到数据库
-        if (userPhone) {
-            try {
-                const item = cartItems.find((i) => i.id === id);
-                if (item) {
-                    await callDataSource({
-                        dataSourceName: 'shop_cart',
-                        methodName: 'wedaUpdateV2',
-                        params: {
-                            query: {
-                                _id: id,
-                            },
-                            record: {
-                                is_selected: newSelected.includes(id),
-                            },
-                        },
-                    });
-                }
-            } catch (e) {
-                console.log('更新选中状态失败', e);
-            }
-        }
+        const items = updateCartItem(id, { selected: newSelected.includes(id) });
+        setCartItems(items);
     };
 
-    // 全选/取消全选
-    const selectAll = async () => {
-        const newSelected =
-            selectedItems.length === cartItems.length ? [] : cartItems.map((item) => item.id);
+    // 全选/取消全选（写入本地存储）
+    const selectAll = () => {
+        const allSelected = cartItems.length > 0 && selectedItems.length === cartItems.length;
+        const newSelected = allSelected ? [] : cartItems.map((item) => item.id);
         setSelectedItems(newSelected);
 
-        // 更新本地数据
-        const updatedItems = cartItems.map((item) => ({
-            ...item,
-            is_selected: newSelected.includes(item.id),
-        }));
-        saveToLocalStorage(updatedItems);
-
-        // 如果已登录，同步到数据库
-        if (userPhone) {
-            try {
-                for (const id of newSelected) {
-                    await callDataSource({
-                        dataSourceName: 'shop_cart',
-                        methodName: 'wedaUpdateV2',
-                        params: {
-                            query: {
-                                _id: id,
-                            },
-                            record: {
-                                is_selected: true,
-                            },
-                        },
-                    });
-                }
-            } catch (e) {
-                console.log('同步选中状态失败', e);
-            }
-        }
+        setCartItems(setAllSelected(!allSelected));
     };
 
-    // 更新数量
-    const updateQuantity = async (id: string | number, quantity: number) => {
+    // 更新数量（写入本地存储）
+    const updateQuantity = (id: string | number, quantity: number) => {
         if (quantity < 1) return;
-        setCartItems((prev) =>
-            prev.map((item) =>
-                item.id === id
-                    ? {
-                          ...item,
-                          quantity,
-                      }
-                    : item,
-            ),
-        );
-        const updatedItems = cartItems.map((item) =>
-            item.id === id
-                ? {
-                      ...item,
-                      quantity,
-                  }
-                : item,
-        );
-        saveToLocalStorage(updatedItems);
-
-        // 如果已登录，同步到数据库
-        if (userPhone) {
-            try {
-                await callDataSource({
-                    dataSourceName: 'shop_cart',
-                    methodName: 'wedaUpdateV2',
-                    params: {
-                        query: {
-                            _id: id,
-                        },
-                        record: {
-                            quantity,
-                        },
-                    },
-                });
-            } catch (e) {
-                console.log('更新数量失败', e);
-            }
-        }
+        setCartItems(updateCartItem(id, { quantity }));
     };
 
-    // 删除商品
-    const removeItem = async (id: string | number) => {
-        setCartItems((prev) => prev.filter((item) => item.id !== id));
+    // 删除商品（写入本地存储）
+    const removeItem = (id: string | number) => {
+        const items = removeCartItem(id);
+        setCartItems(items);
         setSelectedItems((prev) => prev.filter((i) => i !== id));
-        setCartCount(cartCount - 1);
-        const remainingItems = cartItems.filter((item) => item.id !== id);
-        saveToLocalStorage(remainingItems);
+        syncCartCount(items.length);
         toast({
             title: '已删除商品',
             variant: 'success',
         });
-
-        // 如果已登录，从数据库删除
-        if (userPhone) {
-            try {
-                await callDataSource({
-                    dataSourceName: 'shop_cart',
-                    methodName: 'wedaDeleteV2',
-                    params: {
-                        query: {
-                            _id: id,
-                        },
-                    },
-                });
-            } catch (e) {
-                console.log('删除购物车商品失败', e);
-            }
-        }
     };
 
     // 结算
@@ -363,17 +80,6 @@ export default function CartPage() {
                 title: '请选择商品',
                 description: '请先选择要结算的商品',
                 variant: 'warning',
-            });
-            return;
-        }
-
-        // 检查是否有下架商品
-        const unavailableItems = selectedCartItems.filter((item) => item.stock === 0);
-        if (unavailableItems.length > 0) {
-            toast({
-                title: '部分商品已下架',
-                description: '请移除已下架商品后再试',
-                variant: 'destructive',
             });
             return;
         }
@@ -389,31 +95,6 @@ export default function CartPage() {
     const selectedCartItems = cartItems.filter((item) => selectedItems.includes(item.id));
     const totalPrice = selectedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    // 骨架屏加载中
-    if (loading && initialLoad) {
-        return (
-            <div className="min-h-screen page-content-bg pb-20">
-                <Header title="购物车" />
-                <main className="max-w-lg mx-auto px-4 py-4">
-                    <div className="skeleton-delayed space-y-3">
-                        {[1, 2, 3].map((i) => (
-                            <div
-                                key={i}
-                                className="animate-pulse bg-white rounded-xl p-3 flex gap-3"
-                            >
-                                <div className="w-20 h-20 bg-stone-200 rounded-lg" />
-                                <div className="flex-1 space-y-2">
-                                    <div className="h-4 bg-stone-200 rounded w-3/4" />
-                                    <div className="h-3 bg-stone-200 rounded w-1/2" />
-                                    <div className="h-4 bg-stone-200 rounded w-1/4" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </main>
-            </div>
-        );
-    }
     return (
         <div className="min-h-screen page-content-bg pb-20">
             {/*

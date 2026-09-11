@@ -1,7 +1,7 @@
 import { useUserStore } from '@/stores';
 
 import { authApi } from '@/api/auth';
-import type { LoginResult } from '@/types/user';
+import type { LoginResult } from '@/types/api';
 
 /**
  * 登录 / 退出登录的统一入口
