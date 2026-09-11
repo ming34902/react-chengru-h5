@@ -105,7 +105,30 @@
         right: 0;
         left: 0;
         height: 1px;
-        background-color: inherit;
         content: '';
+        background-color: inherit;
+    }
+
+    /**
+     * 底部固定栏「上下缝隙」修复（只处理几何，不设置任何颜色）
+     *
+     * 问题：底部 TabBar 是 fixed 固定定位，高度按 px 书写、由 postcss-mobile-forever 换算成小数 vw；
+     * PC 端 body 还带 transform: scale(0.8)（见 src/styles/scss/global.scss），
+     * 于是栏体的上下边缘与背景之间会差 1~2 个亚像素，
+     * 被栏体遮住的下层内容（列表最后一行、购物车结算栏等）就会从缝隙里透出来，
+     * 看起来像栏体上下各被挖空了一条线。
+     *
+     * 方案：用 padding + 负 margin 把「栏体自身的背景」向上下各撑出 2px（内容位置保持不变）。
+     * - 多出来的 2px 与内容区共用同一个背景（就是该元素自身的背景类，如 bg-white / bg-white/95），
+     *   因此不会出现「补出来的 2px 与内容区颜色不一致」的视觉差异
+     *   （不再用伪元素单独上色，颜色只由元素自身的背景类决定）
+     * - 类名含 keep-px：这 2px 不会被 postcss-mobile-forever 转成小数 vw
+     * - 底部安全区一并在这里处理，元素上不用再写 pb-[env(safe-area-inset-bottom)]
+     */
+    .bottom-bar-fix-keep-px {
+        /* 负 margin 让栏体向外各多占 2px，padding 再把内容推回原位：
+           内容位置不变，而「栏体自身的背景」向上下各多覆盖 2px */
+        padding: 2px 0 calc(env(safe-area-inset-bottom) + 2px);
+        margin: -2px 0;
     }
 }
