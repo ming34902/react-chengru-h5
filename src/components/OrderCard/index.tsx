@@ -248,18 +248,26 @@ export function OrderTabs({ activeTab, onTabChange, counts }: OrderTabsProps) {
     ];
     return (
         <div className="sticky sticky-fix-keep-px top-14 z-20 border-b border-stone-100 bg-white">
-            <div className="flex overflow-x-auto max-w-lg mx-auto">
+            {/*
+                5 个状态按等分宽度排列（flex-1 + min-w-0 + whitespace-nowrap）：
+                1. 各状态的数量是异步加载出来的，等分宽度不会因为「多了数字」而改变每项宽度，
+                   也就不会出现 tab 宽度跳动 / 抖动
+                2. 去掉 overflow-x-auto：吸顶栏内部存在横向滚动容器时会生成合成层，
+                   吸顶栏在页面滚动时会被吸附到整数像素而抖动
+                3. 文案与内边距收窄，保证 5 个 tab 加数量后仍在一屏内，不产生横向溢出
+            */}
+            <div className="flex max-w-lg mx-auto">
                 {tabs.map((tab) => (
                     <button
                         type="button"
                         key={tab.id}
                         onClick={() => onTabChange?.(tab.id)}
-                        className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors relative ${activeTab === tab.id ? 'text-primary-600 border-primary-600' : 'text-stone-400 border-transparent'}`}
+                        className={`flex-1 min-w-0 whitespace-nowrap px-1 py-3 text-xs font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'text-primary-600 border-primary-600' : 'text-stone-400 border-transparent'}`}
                     >
                         {tab.label}
                         {(tab.count ?? 0) > 0 && (
                             <span
-                                className={`ml-1 text-xs ${activeTab === tab.id ? 'text-primary-600' : 'text-stone-400'}`}
+                                className={`ml-0.5 text-[10px] ${activeTab === tab.id ? 'text-primary-600' : 'text-stone-400'}`}
                             >
                                 {tab.count}
                             </span>

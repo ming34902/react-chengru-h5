@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
+import { useFavorite } from '@/hooks/useFavorite';
 import { useWeda } from '@/hooks/useWeda';
 import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
 
@@ -88,6 +89,8 @@ export default function HomePage(props: WedaPageProps) {
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
     /** 本地登录态（由 useUserStore 管理，登录成功后刷新页面不丢失） */
     const isLoggedInFromStore = useUserStore(selectIsLoggedIn);
+    /** 商品收藏（收藏数据维护在 store 的 user.collection 中） */
+    const { isFavorite, toggleFavorite } = useFavorite();
     const { toast } = useToast();
     const [showSearch, setShowSearch] = useState(false);
 
@@ -378,7 +381,7 @@ export default function HomePage(props: WedaPageProps) {
                                     params: {},
                                 })
                             }
-                            className="text-sm text-stone-400 hover:text-orange-600"
+                            className="text-sm bg-transparent text-stone-400 hover:text-orange-600"
                         >
                             查看更多 →
                         </button>
@@ -406,6 +409,8 @@ export default function HomePage(props: WedaPageProps) {
                                     product={product}
                                     onClick={handleProductClick}
                                     onAddToCart={handleAddToCart}
+                                    isFavorite={isFavorite(product)}
+                                    onToggleFavorite={toggleFavorite}
                                 />
                             ))}
                         </div>

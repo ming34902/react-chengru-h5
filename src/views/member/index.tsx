@@ -59,6 +59,29 @@ export default function MemberPage(props: WedaPageProps) {
         '';
     const isLoggedIn = !!userPhone || isLoggedInFromStore;
 
+    /**
+     * 展示用的会员信息：优先使用会员接口数据；
+     * 已登录（store 中已有登录成功后的 mock-token）但会员数据还没回来时，
+     * 先用 store 中的用户信息兜底，避免 MemberCard 空白。
+     */
+    const displayUser: MemberUser | null =
+        user ??
+        (storeUser
+            ? {
+                  id: storeUser.id,
+                  nickName: storeUser.nickname || storeUser.username,
+                  phone: storeUser.phone || storeUser.username,
+                  avatarUrl: storeUser.avatar,
+                  vipLevel: 0,
+              }
+            : null);
+
+    /**
+     * MemberCard 的 loading：
+     * 获取到登录成功后的 token（即已登录）时即为 false，不再展示 loading 圆圈样式
+     */
+    const memberCardLoading = loading && !isLoggedInFromStore;
+
     // 查询会员数据
     const fetchMemberData = useCallback(async () => {
         if (!userPhone) return;
@@ -345,13 +368,14 @@ export default function MemberPage(props: WedaPageProps) {
                 }
                 toast({
                     title: '收货地址',
-                    description: '管理您的收货地址',
+                    description: '正在开发中...',
                 });
                 break;
             case 'coupon':
                 toast({
                     title: '优惠券',
-                    description: `您有 ${stats.coupons} 张可用优惠券`,
+                    // description: `您有 ${stats.coupons} 张可用优惠券`,
+                    description: '正在开发中...',
                 });
                 break;
             case 'favorite':
@@ -364,25 +388,25 @@ export default function MemberPage(props: WedaPageProps) {
             case 'history':
                 toast({
                     title: '浏览历史',
-                    description: '查看您的足迹',
+                    description: '正在开发中...',
                 });
                 break;
             case 'notification':
                 toast({
                     title: '消息通知',
-                    description: '您有 5 条未读消息',
+                    description: '正在开发中...',
                 });
                 break;
             case 'help':
                 toast({
                     title: '帮助中心',
-                    description: '常见问题解答',
+                    description: '正在开发中...',
                 });
                 break;
             case 'settings':
                 toast({
                     title: '设置',
-                    description: '应用设置',
+                    description: '正在开发中...',
                 });
                 break;
             case 'logout':
@@ -527,8 +551,8 @@ export default function MemberPage(props: WedaPageProps) {
         );
     }
 
-    // 加载状态
-    if (loading && !user) {
+    // 加载状态（已登录时用 store 中的用户兜底，不再整页 loading）
+    if (loading && !displayUser) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
@@ -540,8 +564,12 @@ export default function MemberPage(props: WedaPageProps) {
     }
     return (
         <div className="min-h-screen bg-background pb-20">
-            {/* Member Header */}
-            <MemberHeader user={user} onAvatarClick={handleAvatarClick} loading={loading} />
+            {/* Member Header（loading 只在未登录/首次拉取时展示，登录成功后为 false） */}
+            <MemberHeader
+                user={displayUser}
+                onAvatarClick={handleAvatarClick}
+                loading={memberCardLoading}
+            />
 
             {/* Member Stats */}
             <MemberStats stats={{ ...stats, favorites: collection.length }} />
@@ -558,18 +586,18 @@ export default function MemberPage(props: WedaPageProps) {
                         </div>
                         <div>
                             <p className="text-white font-semibold">
-                                {(user?.vipLevel ?? 0) > 0
-                                    ? `VIP ${user?.vipLevel ?? 0} 会员`
+                                {(displayUser?.vipLevel ?? 0) > 0
+                                    ? `VIP ${displayUser?.vipLevel ?? 0} 会员`
                                     : '升级钻石会员'}
                             </p>
                             <p className="text-white/80 text-xs">
-                                {(user?.vipLevel ?? 0) > 0
+                                {(displayUser?.vipLevel ?? 0) > 0
                                     ? '享受更多专属权益'
                                     : '享受更多专属权益'}
                             </p>
                         </div>
                     </div>
-                    {(user?.vipLevel ?? 0) < 5 && (
+                    {(displayUser?.vipLevel ?? 0) < 5 && (
                         <button
                             type="button"
                             className="px-4 py-1.5 bg-white text-amber-600 text-sm font-semibold rounded-full"

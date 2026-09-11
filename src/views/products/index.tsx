@@ -8,6 +8,7 @@ import { ProductList } from '@/components/ProductCard';
 import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
+import { useFavorite } from '@/hooks/useFavorite';
 import { useWeda } from '@/hooks/useWeda';
 import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
 
@@ -43,6 +44,8 @@ export default function ProductsPage(props: WedaPageProps) {
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
     /** 本地登录态（由 useUserStore 管理） */
     const isLoggedIn = useUserStore(selectIsLoggedIn);
+    /** 商品收藏（收藏数据维护在 store 的 user.collection 中） */
+    const { isFavorite, toggleFavorite } = useFavorite();
     const [showSearch, setShowSearch] = useState(false);
     // 支持从首页分类入口 / 搜索面板「快速分类」带参进入（/products?category=xxx），首次渲染即选中对应分类
     const [activeCategory, setActiveCategory] = useState<string>(
@@ -318,6 +321,8 @@ export default function ProductsPage(props: WedaPageProps) {
                             hasMore={hasMore}
                             loading={loading}
                             loadingMore={loadingMore}
+                            isFavorite={isFavorite}
+                            onToggleFavorite={toggleFavorite}
                         />
                     </div>
                 </div>

@@ -17,7 +17,7 @@ export interface TabBarProps {
  */
 export function TabBar({ activeTab, onTabChange, cartCount = 0 }: TabBarProps) {
     return (
-        <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-stone-200 bg-white pb-[env(safe-area-inset-bottom)]">
+        <div className="fixed right-0 bottom-0 left-0 z-50 border-stone-200 bg-white pb-[env(safe-area-inset-bottom)]">
             <div className="mx-auto flex h-16 max-w-lg items-center justify-around">
                 {TAB_BAR_ITEMS.map((tab) => {
                     const Icon = tab.icon;

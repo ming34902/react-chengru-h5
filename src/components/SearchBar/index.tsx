@@ -143,7 +143,7 @@ export function SearchBar({
                     <button
                         type="button"
                         onClick={() => onClose?.()}
-                        className="text-sm text-stone-600 font-medium"
+                        className="text-sm bg-transparent text-stone-600 font-medium"
                     >
                         取消
                     </button>
@@ -160,7 +160,7 @@ export function SearchBar({
                             <button
                                 type="button"
                                 onClick={clearRecentSearches}
-                                className="text-xs text-stone-400 hover:text-stone-600"
+                                className="text-xs bg-transparent text-stone-400 hover:text-stone-600"
                             >
                                 清空
                             </button>
