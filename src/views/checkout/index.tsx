@@ -65,7 +65,7 @@ export default function CheckoutPage(props: WedaPageProps) {
     };
 
     return (
-        <div className="min-h-screen bg-background pb-32">
+        <div className="min-h-screen page-content-bg pb-32">
             <Header title="确认订单" showBack onBack={() => $w.utils.navigateBack()} />
 
             <main className="max-w-lg mx-auto px-4 py-4 space-y-3">

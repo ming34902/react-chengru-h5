@@ -262,7 +262,7 @@ export default function HomePage(props: WedaPageProps) {
         });
     };
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen page-content-bg pb-20">
             <Header
                 title="精选好物"
                 showSearch
@@ -276,7 +276,7 @@ export default function HomePage(props: WedaPageProps) {
                 }
             />
 
-            <main className="max-w-lg mx-auto px-4 py-4 space-y-6 bg-gray-50/95">
+            <main className="max-w-lg mx-auto px-4 py-4 space-y-6">
                 {/* Banner */}
                 <Banner banners={banners} />
 

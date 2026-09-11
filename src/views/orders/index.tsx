@@ -252,7 +252,7 @@ export default function OrdersPage(props: WedaPageProps) {
         });
     };
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen page-content-bg pb-20">
             <Header title="我的订单" />
 
             {/* Order Tabs */}

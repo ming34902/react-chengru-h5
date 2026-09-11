@@ -117,7 +117,7 @@ export function SearchBar({
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-background">
+        <div className="fixed inset-0 z-50 page-content-bg">
             {/* 搜索头部 */}
             <div className="sticky sticky-fix-keep-px top-0 z-10 border-b border-stone-100 bg-white">
                 <div className="flex items-center gap-3 h-14 px-4 max-w-lg mx-auto">

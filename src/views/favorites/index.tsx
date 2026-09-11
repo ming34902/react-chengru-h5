@@ -45,7 +45,7 @@ export default function FavoritesPage(props: WedaPageProps) {
     // 未登录：引导去登录
     if (!isLoggedIn) {
         return (
-            <div className="min-h-screen bg-background pb-20">
+            <div className="min-h-screen page-content-bg pb-20">
                 <Header title="我的收藏" showBack onBack={() => $w.utils.navigateBack()} />
                 <div className="mx-auto flex max-w-lg flex-col items-center justify-center px-4 py-20">
                     <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-stone-100">
@@ -66,10 +66,10 @@ export default function FavoritesPage(props: WedaPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/90 pb-20">
+        <div className="min-h-screen page-content-bg pb-20">
             <Header title="我的收藏" showBack onBack={() => $w.utils.navigateBack()} />
 
-            <main className="mx-auto max-w-lg px-4 py-4 bg-gray-50/90">
+            <main className="mx-auto max-w-lg px-4 py-4">
                 {collection.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-stone-100">

@@ -33,6 +33,13 @@
         --ring: 222.2 84% 4.9%;
 
         --radius: 0.5rem;
+
+        /**
+         * 页面内容区块统一背景色（全局唯一定义）
+         * 取值 = Tailwind 的 bg-gray-50/90（gray-50 #F9FAFB + 90% 不透明度）
+         * 所有页面内容区块统一使用 .page-content-bg，改色只需要改这里一处
+         */
+        --page-content-bg: rgb(249 250 251 / 90%);
     }
 
     .dark {
@@ -63,6 +70,15 @@
         --border: 217.2 32.6% 17.5%;
         --input: 217.2 32.6% 17.5%;
         --ring: 212.7 26.8% 83.9%;
+
+        --radius: 0.5rem;
+
+        /**
+         * 页面内容区块统一背景色（全局唯一定义）
+         * 取值 = Tailwind 的 bg-gray-50/90（gray-50 #F9FAFB + 90% 不透明度）
+         * 所有页面内容区块统一使用 .page-content-bg，改色只需要改这里一处
+         */
+        --page-content-bg: rgba(27, 43, 59, 0.9);
     }
 }
 
@@ -130,5 +146,18 @@
            内容位置不变，而「栏体自身的背景」向上下各多覆盖 2px */
         padding: 2px 0 calc(env(safe-area-inset-bottom) + 2px);
         margin: -2px 0;
+    }
+
+    /**
+     * 页面内容区块统一背景
+     *
+     * 所有页面的内容区块统一使用本类（对应 Tailwind 的 bg-gray-50/90），
+     * 颜色只在 :root 的 --page-content-bg 里定义一次，改色只改那一处。
+     *
+     * 注意：同一个页面只在外层内容区块上用一次即可 ——
+     * 半透明背景叠加两次（外层 + 内层）会让颜色变深，出现「色差」。
+     */
+    .page-content-bg {
+        background-color: var(--page-content-bg);
     }
 }

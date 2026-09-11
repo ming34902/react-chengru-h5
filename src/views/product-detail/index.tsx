@@ -143,7 +143,7 @@ export default function ProductDetailPage(props: WedaPageProps) {
         });
     };
     return (
-        <div className="min-h-screen bg-background pb-24">
+        <div className="min-h-screen page-content-bg pb-24">
             <Header title="商品详情" showBack onBack={() => $w.utils.navigateBack()} />
 
             {/* Image Gallery */}

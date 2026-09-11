@@ -54,7 +54,7 @@ export function MemberHeader({ user, onAvatarClick, loading = false }: MemberHea
         : '登录后查看更多权益';
 
     return (
-        <div className="bg-gradient-to-b from-orange-50 to-background px-4 pt-8 pb-6">
+        <div className="bg-gradient-to-b from-orange-50 to-[var(--page-content-bg)] px-4 pt-8 pb-6">
             <div className="mx-auto flex max-w-lg items-center gap-4">
                 <button
                     type="button"

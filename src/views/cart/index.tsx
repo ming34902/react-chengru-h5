@@ -394,7 +394,7 @@ export default function CartPage(props: WedaPageProps) {
     // 骨架屏加载中
     if (loading && initialLoad) {
         return (
-            <div className="min-h-screen bg-background pb-20">
+            <div className="min-h-screen page-content-bg pb-20">
                 <Header title="购物车" />
                 <main className="max-w-lg mx-auto px-4 py-4">
                     <div className="animate-pulse space-y-3">
@@ -414,7 +414,7 @@ export default function CartPage(props: WedaPageProps) {
         );
     }
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen page-content-bg pb-20">
             {/*
                 吸顶区域：把 Header 与「全选 / 共计商品」栏放进同一个 sticky 容器
                 —— 整个吸顶区只有一个 top-0 的吸顶偏移（整数），不会再出现

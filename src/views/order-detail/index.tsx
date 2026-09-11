@@ -231,7 +231,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
     };
     if (loading) {
         return (
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen page-content-bg">
                 <Header title="订单详情" showBack onBack={() => $w.utils.navigateBack()} />
                 <div className="mx-4 mt-4 space-y-4">
                     <div className="bg-white rounded-2xl p-5 animate-pulse">
@@ -246,7 +246,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
     }
     if (!order) {
         return (
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen page-content-bg">
                 <Header title="订单详情" showBack onBack={() => $w.utils.navigateBack()} />
                 <div className="flex flex-col items-center justify-center py-20">
                     <p className="text-stone-500">订单不存在</p>
@@ -268,7 +268,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
     const currentStep = getCurrentStep(order.status ?? 'pending');
     const payMethodText = order.payMethod === 'wechat' ? '微信支付' : order.payMethod || '未支付';
     return (
-        <div className="min-h-screen bg-background pb-28">
+        <div className="min-h-screen page-content-bg pb-28">
             <Header title="订单详情" showBack onBack={() => $w.utils.navigateBack()} />
 
             {/* Status Banner */}

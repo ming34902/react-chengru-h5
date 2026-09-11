@@ -441,7 +441,7 @@ export default function MemberPage(props: WedaPageProps) {
     // Show Login Form
     if (showLogin) {
         return (
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen page-content-bg">
                 <LoginForm
                     onLogin={handleLogin}
                     onRegister={() => {
@@ -463,7 +463,7 @@ export default function MemberPage(props: WedaPageProps) {
     // Show Register Form
     if (showRegister) {
         return (
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen page-content-bg">
                 <div className="flex items-center justify-center h-14 bg-white border-b border-stone-100">
                     <span className="font-serif text-lg font-semibold text-stone-800">注册</span>
                 </div>
@@ -482,8 +482,8 @@ export default function MemberPage(props: WedaPageProps) {
     // 未登录状态
     if (!isLoggedIn) {
         return (
-            <div className="min-h-screen bg-background pb-20">
-                <div className="pt-16 pb-8 px-6 bg-gradient-to-b from-orange-50 to-background">
+            <div className="min-h-screen page-content-bg pb-20">
+                <div className="pt-16 pb-8 px-6 bg-gradient-to-b from-orange-50 to-[var(--page-content-bg)]">
                     <div className="text-center">
                         <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-stone-100 flex items-center justify-center">
                             <span className="text-5xl">👤</span>
@@ -554,7 +554,7 @@ export default function MemberPage(props: WedaPageProps) {
     // 加载状态（已登录时用 store 中的用户兜底，不再整页 loading）
     if (loading && !displayUser) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="min-h-screen page-content-bg flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-stone-500">加载中...</p>
@@ -563,7 +563,7 @@ export default function MemberPage(props: WedaPageProps) {
         );
     }
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen page-content-bg pb-20">
             {/* Member Header（loading 只在未登录/首次拉取时展示，登录成功后为 false） */}
             <MemberHeader
                 user={displayUser}

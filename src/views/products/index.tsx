@@ -278,7 +278,7 @@ export default function ProductsPage(props: WedaPageProps) {
         navigate(`/products?category=${encodeURIComponent(categoryId)}`, { replace: true });
     };
     return (
-        <div className="min-h-screen bg-background pb-20 ">
+        <div className="min-h-screen page-content-bg pb-20 ">
             <Header
                 title="商品列表"
                 showSearch
@@ -286,7 +286,7 @@ export default function ProductsPage(props: WedaPageProps) {
                 searchPlaceholder={searchQuery || '搜索商品'}
             />
 
-            <div className="flex bg-gray-50/95">
+            <div className="flex">
                 {/* Category Sidebar */}
                 <CategorySidebar
                     activeCategory={activeCategory}
@@ -294,7 +294,7 @@ export default function ProductsPage(props: WedaPageProps) {
                 />
 
                 {/* Main Content */}
-                <div className="flex-1 bg-gray-50/95">
+                <div className="flex-1">
                     {/* Filter Bar */}
                     <FilterBar
                         sortOptions={sortOptions}
@@ -306,7 +306,6 @@ export default function ProductsPage(props: WedaPageProps) {
                                 description: '高级筛选功能开发中',
                             })
                         }
-                        
                     />
 
                     {/* Products Grid */}
