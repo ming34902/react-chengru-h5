@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import {
     CheckCircle,
@@ -15,21 +16,18 @@ import {
 import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
-import { useWeda } from '@/hooks/useWeda';
+import { callDataSource } from '@/api';
+import type { OrderItemRecord, OrderRecord } from '@/types/weda';
 
-import type { OrderItemRecord, OrderRecord, WedaPageProps } from '@/types/weda';
-
-export default function OrderDetailPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function OrderDetailPage() {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [order, setOrder] = useState<OrderRecord | null>(null);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    // 获取订单号（兼容低代码页面参数与路由 query）
-    const getOrderNo = () => {
-        const params = $w.page.dataset.params ?? {};
-        return params.orderNo || params.id || '';
-    };
+    // 获取订单号（来自路由 query：/order-detail?orderNo=xxx 或 ?id=xxx）
+    const getOrderNo = () => searchParams.get('orderNo') || searchParams.get('id') || '';
 
     // 查询订单详情
     const fetchOrderDetail = useCallback(async () => {
@@ -43,7 +41,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
             }
 
             // 查询订单数据
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_order',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -177,7 +175,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
     // 确认收货
     const handleReceive = async () => {
         try {
-            await $w.cloud.callDataSource({
+            await callDataSource({
                 dataSourceName: 'shop_order',
                 methodName: 'wedaUpdateV2',
                 params: {
@@ -223,16 +221,13 @@ export default function OrderDetailPage(props: WedaPageProps) {
             description: '正在跳转微信支付...',
         });
         setTimeout(() => {
-            $w.utils.navigateTo({
-                pageId: 'checkout',
-                params: {},
-            });
+            navigate('/checkout');
         }, 1500);
     };
     if (loading) {
         return (
             <div className="min-h-screen page-content-bg">
-                <Header title="订单详情" showBack onBack={() => $w.utils.navigateBack()} />
+                <Header title="订单详情" showBack onBack={() => navigate(-1)} />
                 <div className="mx-4 mt-4 space-y-4">
                     <div className="bg-white rounded-2xl p-5 animate-pulse">
                         <div className="h-20 bg-gray-200 rounded-xl"></div>
@@ -247,16 +242,12 @@ export default function OrderDetailPage(props: WedaPageProps) {
     if (!order) {
         return (
             <div className="min-h-screen page-content-bg">
-                <Header title="订单详情" showBack onBack={() => $w.utils.navigateBack()} />
+                <Header title="订单详情" showBack onBack={() => navigate(-1)} />
                 <div className="flex flex-col items-center justify-center py-20">
                     <p className="text-stone-500">订单不存在</p>
                     <button
                         type="button"
-                        onClick={() =>
-                            $w.utils.navigateTo({
-                                pageId: 'orders',
-                            })
-                        }
+                        onClick={() => navigate('/orders')}
                         className="mt-4 px-6 py-2 bg-primary-500 text-white rounded-full"
                     >
                         返回订单列表
@@ -269,7 +260,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
     const payMethodText = order.payMethod === 'wechat' ? '微信支付' : order.payMethod || '未支付';
     return (
         <div className="min-h-screen page-content-bg pb-28">
-            <Header title="订单详情" showBack onBack={() => $w.utils.navigateBack()} />
+            <Header title="订单详情" showBack onBack={() => navigate(-1)} />
 
             {/* Status Banner */}
             <div
@@ -565,11 +556,7 @@ export default function OrderDetailPage(props: WedaPageProps) {
                     {order.status === 'cancelled' && (
                         <button
                             type="button"
-                            onClick={() =>
-                                $w.utils.navigateTo({
-                                    pageId: 'orders',
-                                })
-                            }
+                            onClick={() => navigate('/orders')}
                             className="flex-1 py-2.5 bg-primary-500 text-white font-semibold rounded-full hover:bg-primary-600 transition-colors"
                         >
                             返回订单列表

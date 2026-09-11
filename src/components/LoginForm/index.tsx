@@ -71,7 +71,11 @@ export function LoginForm({
                         onChange={(event) => setPassword(event.target.value)}
                         className="flex-1 bg-transparent text-sm text-stone-800 outline-none placeholder:text-stone-400"
                     />
-                    <button type="button" onClick={() => setShowPassword((prev) => !prev)} className="bg-transparent">
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="bg-transparent"
+                    >
                         {showPassword ? (
                             <EyeOff className="h-4 w-4 text-stone-400" />
                         ) : (

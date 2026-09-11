@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Dialog } from 'antd-mobile';
 
@@ -18,15 +18,13 @@ import {
 } from '@/components/MemberCard';
 import { useToast } from '@/components/Toast';
 
-import { useWeda } from '@/hooks/useWeda';
 import { selectCollection, selectIsLoggedIn, useUserStore } from '@/stores';
 
-import { authApi } from '@/api';
-import type { WedaPageProps } from '@/types/weda';
+import { authApi, callDataSource } from '@/api';
 import { logoutUser } from '@/utils/auth';
 
-export default function MemberPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function MemberPage() {
+    const navigate = useNavigate();
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -48,15 +46,8 @@ export default function MemberPage(props: WedaPageProps) {
     const collection = useUserStore(selectCollection);
     const loginToStore = useUserStore((state) => state.login);
 
-    // 获取当前用户手机号：低代码平台注入的 currentUser 优先，其次用 store 中的登录用户兜底
-    const currentUser = props.$w?.auth?.currentUser;
-    const userPhone =
-        currentUser?.name ||
-        currentUser?.phone ||
-        currentUser?.userId ||
-        storeUser?.phone ||
-        storeUser?.username ||
-        '';
+    // 获取当前用户手机号（登录态由 useUserStore 管理，刷新页面不丢失）
+    const userPhone = storeUser?.phone || storeUser?.username || '';
     const isLoggedIn = !!userPhone || isLoggedInFromStore;
 
     /**
@@ -87,7 +78,7 @@ export default function MemberPage(props: WedaPageProps) {
         if (!userPhone) return;
         setLoading(true);
         try {
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_member',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -160,7 +151,7 @@ export default function MemberPage(props: WedaPageProps) {
     // 创建新会员
     const createMember = useCallback(async (phone: string, nickname?: string) => {
         try {
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_member',
                 methodName: 'wedaCreateV2',
                 params: {
@@ -218,7 +209,7 @@ export default function MemberPage(props: WedaPageProps) {
             const phone = formData.phone;
 
             // 先查询是否存在该手机号的会员
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_member',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -286,7 +277,7 @@ export default function MemberPage(props: WedaPageProps) {
             const nickname = formData.nickname;
 
             // 检查是否已存在
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_member',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -380,10 +371,7 @@ export default function MemberPage(props: WedaPageProps) {
                 break;
             case 'favorite':
                 // 跳转收藏商品列表页面（数据取自 store 中的 user.collection）
-                $w.utils.navigateTo({
-                    pageId: 'favorites',
-                    params: {},
-                });
+                navigate('/favorites');
                 break;
             case 'history':
                 toast({

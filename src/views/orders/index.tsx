@@ -1,17 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Header } from '@/components/Header';
 import { EmptyOrder, OrderCard, OrderTabs } from '@/components/OrderCard';
 import { useToast } from '@/components/Toast';
 
-import { useWeda } from '@/hooks/useWeda';
 import { useUserStore } from '@/stores';
 
-import type { OrderRecord, WedaPageProps, WedaRecord } from '@/types/weda';
+import { callDataSource } from '@/api';
+import type { OrderRecord, WedaRecord } from '@/types/weda';
+import { buildPath } from '@/utils/router';
 
-export default function OrdersPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function OrdersPage() {
+    const navigate = useNavigate();
     const [filterStatus, setFilterStatus] = useState('all');
     const [orders, setOrders] = useState<OrderRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -23,16 +25,10 @@ export default function OrdersPage(props: WedaPageProps) {
     });
     const { toast } = useToast();
 
-    // 获取当前用户手机号
+    // 获取当前用户手机号（登录态由 useUserStore 管理）
     const storeUser = useUserStore((state) => state.user);
-    const getUserPhone = () => {
-        const user = props.$w?.auth?.currentUser;
-        if (user) {
-            return user.name || '';
-        }
-        // 本地登录态（store 管理）兜底，最后读取历史存储
-        return storeUser?.phone || storeUser?.username || localStorage.getItem('user_phone') || '';
-    };
+    const getUserPhone = () =>
+        storeUser?.phone || storeUser?.username || localStorage.getItem('user_phone') || '';
 
     // 查询订单数据
     const fetchOrders = useCallback(async () => {
@@ -49,7 +45,7 @@ export default function OrdersPage(props: WedaPageProps) {
             }
 
             // 查询真实订单数据
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_order',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -124,7 +120,7 @@ export default function OrdersPage(props: WedaPageProps) {
             case 'cancel':
                 try {
                     // 更新订单状态为已取消
-                    await $w.cloud.callDataSource({
+                    await callDataSource({
                         dataSourceName: 'shop_order',
                         methodName: 'wedaUpdateV2',
                         params: {
@@ -160,18 +156,13 @@ export default function OrdersPage(props: WedaPageProps) {
                 });
                 // 实际跳转微信支付
                 setTimeout(() => {
-                    $w.utils.navigateTo({
-                        pageId: 'checkout',
-                        params: {
-                            orderId: order.id,
-                        },
-                    });
+                    navigate(buildPath('/checkout', { orderId: order.id }));
                 }, 1500);
                 break;
             case 'receive':
                 try {
                     // 确认收货
-                    await $w.cloud.callDataSource({
+                    await callDataSource({
                         dataSourceName: 'shop_order',
                         methodName: 'wedaUpdateV2',
                         params: {
@@ -210,7 +201,7 @@ export default function OrdersPage(props: WedaPageProps) {
             case 'delete':
                 try {
                     // 删除已取消/已完成订单
-                    await $w.cloud.callDataSource({
+                    await callDataSource({
                         dataSourceName: 'shop_order',
                         methodName: 'wedaDeleteV2',
                         params: {
@@ -243,13 +234,7 @@ export default function OrdersPage(props: WedaPageProps) {
 
     // 点击订单卡片
     const handleOrderClick = (order: OrderRecord) => {
-        $w.utils.navigateTo({
-            pageId: 'order-detail',
-            params: {
-                id: order.id,
-                orderNo: order.orderNo,
-            },
-        });
+        navigate(buildPath('/order-detail', { id: order.id, orderNo: order.orderNo }));
     };
     return (
         <div className="min-h-screen page-content-bg pb-20">

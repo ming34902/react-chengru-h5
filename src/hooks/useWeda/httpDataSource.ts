@@ -12,8 +12,8 @@ import type {
 /**
  * 真实 HTTP 数据源适配层
  *
- * 作用：把低代码页面的 `$w.cloud.callDataSource({ dataSourceName, methodName, params })`
- * 翻译成 src/api 里的 REST 调用，页面代码无需改动。
+ * 作用：把低代码数据源的调用形态 `{ dataSourceName, methodName, params }`
+ * 翻译成 src/api 里的 REST 调用（页面通过 src/api/dataSource.ts 调用，无需关心低代码细节）。
  * 与本地 mock（mockDataSource.ts）二选一，由环境变量 VITE_USE_MOCK 控制。
  */
 

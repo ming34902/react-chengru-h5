@@ -1,14 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { CartItem, CartSummary, EmptyCart } from '@/components/CartItem';
 import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
-import { useWeda } from '@/hooks/useWeda';
 import { useAppStore, useUserStore } from '@/stores';
 
-import type { CartRecord, WedaPageProps } from '@/types/weda';
+import { callDataSource } from '@/api';
+import type { CartRecord } from '@/types/weda';
+import { buildPath } from '@/utils/router';
 
 // Mock 购物车数据（备用）
 const mockCartItems = [
@@ -50,9 +52,8 @@ const mockCartItems = [
     },
 ];
 
-export default function CartPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
-    const auth = $w.auth;
+export default function CartPage() {
+    const navigate = useNavigate();
     const [cartItems, setCartItems] = useState<CartRecord[]>([]);
     const [selectedItems, setSelectedItems] = useState<(string | number)[]>([]);
     // 购物车数量统一由全局 store 管理（布局中的 TabBar 读取角标）
@@ -62,11 +63,9 @@ export default function CartPage(props: WedaPageProps) {
     const [initialLoad, setInitialLoad] = useState(true);
     const { toast } = useToast();
 
-    // 获取当前用户（低代码平台注入的 currentUser 优先，其次取 store 管理的本地登录态）
+    // 获取当前用户手机号（登录态由 useUserStore 管理）
     const storeUser = useUserStore((state) => state.user);
-    const currentUser = auth?.currentUser;
-    const userPhone =
-        currentUser?.name || currentUser?.phone || storeUser?.phone || storeUser?.username || '';
+    const userPhone = storeUser?.phone || storeUser?.username || '';
 
     // 查询真实购物车数据
     const fetchCartItems = async () => {
@@ -77,7 +76,7 @@ export default function CartPage(props: WedaPageProps) {
         }
         try {
             setLoading(true);
-            const result = await $w.cloud.callDataSource({
+            const result = await callDataSource({
                 dataSourceName: 'shop_cart',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -104,7 +103,7 @@ export default function CartPage(props: WedaPageProps) {
                         };
                         if (record.product_id) {
                             try {
-                                const productResult = await $w.cloud.callDataSource({
+                                const productResult = await callDataSource({
                                     dataSourceName: 'shop_product',
                                     methodName: 'wedaGetItemV2',
                                     params: {
@@ -227,7 +226,7 @@ export default function CartPage(props: WedaPageProps) {
             try {
                 const item = cartItems.find((i) => i.id === id);
                 if (item) {
-                    await $w.cloud.callDataSource({
+                    await callDataSource({
                         dataSourceName: 'shop_cart',
                         methodName: 'wedaUpdateV2',
                         params: {
@@ -263,7 +262,7 @@ export default function CartPage(props: WedaPageProps) {
         if (userPhone) {
             try {
                 for (const id of newSelected) {
-                    await $w.cloud.callDataSource({
+                    await callDataSource({
                         dataSourceName: 'shop_cart',
                         methodName: 'wedaUpdateV2',
                         params: {
@@ -308,7 +307,7 @@ export default function CartPage(props: WedaPageProps) {
         // 如果已登录，同步到数据库
         if (userPhone) {
             try {
-                await $w.cloud.callDataSource({
+                await callDataSource({
                     dataSourceName: 'shop_cart',
                     methodName: 'wedaUpdateV2',
                     params: {
@@ -341,7 +340,7 @@ export default function CartPage(props: WedaPageProps) {
         // 如果已登录，从数据库删除
         if (userPhone) {
             try {
-                await $w.cloud.callDataSource({
+                await callDataSource({
                     dataSourceName: 'shop_cart',
                     methodName: 'wedaDeleteV2',
                     params: {
@@ -380,13 +379,12 @@ export default function CartPage(props: WedaPageProps) {
         }
 
         // 跳转到结算页面
-        $w.utils.navigateTo({
-            pageId: 'checkout',
-            params: {
+        navigate(
+            buildPath('/checkout', {
                 items: JSON.stringify(selectedCartItems),
                 from: 'cart',
-            },
-        });
+            }),
+        );
     };
     const selectedCartItems = cartItems.filter((item) => selectedItems.includes(item.id));
     const totalPrice = selectedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

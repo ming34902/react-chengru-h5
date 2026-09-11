@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router';
+
 import { Minus, Plus, Trash2 } from 'lucide-react';
 
 import { useToast } from '@/components/Toast';
@@ -235,10 +237,10 @@ export function CartSummary({ totalPrice, selectedItems, onCheckout }: CartSumma
 
 /** 空购物车占位 */
 export function EmptyCart() {
+    const navigate = useNavigate();
+
     const handleGoShopping = () => {
-        if (typeof window !== 'undefined' && window.__wx__) {
-            window.__wx__.utils.navigateTo({ pageId: 'products' });
-        }
+        navigate('/products');
     };
 
     return (

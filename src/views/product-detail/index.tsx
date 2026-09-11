@@ -1,15 +1,15 @@
 /* eslint-disable @eslint-react/no-array-index-key -- 低代码生成组件：列表 key 按平台实现保留 */
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Heart, Minus, Plus, Share2, Star } from 'lucide-react';
 
 import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
-import { useWeda } from '@/hooks/useWeda';
 import { selectIsLoggedIn, useUserStore } from '@/stores';
 
-import type { WedaPageProps } from '@/types/weda';
+import { buildPath } from '@/utils/router';
 
 const productDetail = {
     id: 1,
@@ -64,8 +64,8 @@ const reviews = [
     },
 ];
 
-export default function ProductDetailPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function ProductDetailPage() {
+    const navigate = useNavigate();
     const [currentImage, setCurrentImage] = useState(0);
     const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({
         颜色: '黑色',
@@ -93,9 +93,8 @@ export default function ProductDetailPage(props: WedaPageProps) {
         });
     };
     const handleBuyNow = () => {
-        $w.utils.navigateTo({
-            pageId: 'checkout',
-            params: {
+        navigate(
+            buildPath('/checkout', {
                 items: JSON.stringify([
                     {
                         id: productDetail.id,
@@ -106,8 +105,8 @@ export default function ProductDetailPage(props: WedaPageProps) {
                         spec: Object.values(selectedSpecs).join(' '),
                     },
                 ]),
-            },
-        });
+            }),
+        );
     };
     const handleCollect = () => {
         if (!isLoggedIn) {
@@ -144,7 +143,7 @@ export default function ProductDetailPage(props: WedaPageProps) {
     };
     return (
         <div className="min-h-screen page-content-bg pb-24">
-            <Header title="商品详情" showBack onBack={() => $w.utils.navigateBack()} />
+            <Header title="商品详情" showBack onBack={() => navigate(-1)} />
 
             {/* Image Gallery */}
             <div className="relative">

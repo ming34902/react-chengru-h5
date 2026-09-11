@@ -1,22 +1,19 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import { type CartItemData, CartSummary } from '@/components/CartItem';
 import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
-import { useWeda } from '@/hooks/useWeda';
-
-import type { CartRecord, WedaPageProps } from '@/types/weda';
+import type { CartRecord } from '@/types/weda';
 
 /**
  * 确认订单页（结算页）
  *
- * 数据来源：上一个页面通过低代码 navigateTo({ pageId: 'checkout', params: { items } }) 传入，
- * useWeda 会把 params 转成 query（items=<JSON>），这里解析后展示。
+ * 数据来源：上一个页面通过 navigate(`/checkout?items=<JSON>`) 传入，这里解析后展示。
  */
-export default function CheckoutPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function CheckoutPage() {
+    const navigate = useNavigate();
     const { toast } = useToast();
     const [searchParams] = useSearchParams();
 
@@ -61,12 +58,12 @@ export default function CheckoutPage(props: WedaPageProps) {
         }
 
         toast({ title: '订单已提交', description: '可在订单列表查看', variant: 'success' });
-        $w.utils.navigateTo({ pageId: 'orders' });
+        navigate('/orders');
     };
 
     return (
         <div className="min-h-screen page-content-bg pb-32">
-            <Header title="确认订单" showBack onBack={() => $w.utils.navigateBack()} />
+            <Header title="确认订单" showBack onBack={() => navigate(-1)} />
 
             <main className="max-w-lg mx-auto px-4 py-4 space-y-3">
                 {cartItems.length === 0 ? (

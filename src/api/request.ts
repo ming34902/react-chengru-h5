@@ -4,7 +4,7 @@
  * 说明：
  * - baseURL 来自环境变量 VITE_GLOB_API_URL（见根目录 .env.development / .env.production）
  * - 统一处理 query 参数、超时、JSON 解析、鉴权头与错误抛出
- * - 与低代码数据源的关系：src/api/shop.ts -> src/hooks/useWeda/httpDataSource.ts -> useWeda()
+ * - 数据源链路：页面 -> src/api/dataSource.ts（按 VITE_USE_MOCK 选择）-> src/hooks/useWeda/httpDataSource.ts
  */
 import { MOCK_TOKEN_KEY } from '@/constants/auth';
 

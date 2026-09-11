@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Banner } from '@/components/Banner';
 import { Header } from '@/components/Header';
@@ -8,10 +9,11 @@ import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
 import { useFavorite } from '@/hooks/useFavorite';
-import { useWeda } from '@/hooks/useWeda';
 import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
 
-import type { ProductRecord, WedaPageProps, WedaRecord } from '@/types/weda';
+import { callDataSource } from '@/api';
+import type { ProductRecord, WedaRecord } from '@/types/weda';
+import { buildPath } from '@/utils/router';
 
 // 分类数据（静态定义）
 const categories = [
@@ -84,8 +86,8 @@ const banners = [
     },
 ];
 
-export default function HomePage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function HomePage() {
+    const navigate = useNavigate();
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
     /** 本地登录态（由 useUserStore 管理，登录成功后刷新页面不丢失） */
     const isLoggedInFromStore = useUserStore(selectIsLoggedIn);
@@ -110,7 +112,7 @@ export default function HomePage(props: WedaPageProps) {
             setLoading(true);
 
             // 查询推荐商品（is_featured = true）
-            const featuredResult = await $w.cloud.callDataSource({
+            const featuredResult = await callDataSource({
                 dataSourceName: 'shop_product',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -138,7 +140,7 @@ export default function HomePage(props: WedaPageProps) {
             });
 
             // 查询限时秒杀商品（上架商品中销量较高的）
-            const flashResult = await $w.cloud.callDataSource({
+            const flashResult = await callDataSource({
                 dataSourceName: 'shop_product',
                 methodName: 'wedaGetRecordsV2',
                 params: {
@@ -207,27 +209,18 @@ export default function HomePage(props: WedaPageProps) {
             description: `正在搜索: ${query}`,
             variant: 'default',
         });
-        $w.utils.navigateTo({
-            pageId: 'products',
-            params: {
-                search: query,
-            },
-        });
+        navigate(buildPath('/products', { search: query }));
     };
     const handleAddToCart = async (product: ProductRecord) => {
         try {
-            // 获取当前用户（低代码平台注入的 currentUser 优先，其次取 store 管理的本地登录态）
-            const currentUser = $w.auth.currentUser;
-            if (!currentUser && !isLoggedInFromStore) {
+            // 检查是否登录（登录态由 useUserStore 管理）
+            if (!isLoggedInFromStore) {
                 toast({
                     title: '提示',
                     description: '请先登录后再添加购物车',
                     variant: 'destructive',
                 });
-                $w.utils.navigateTo({
-                    pageId: 'member',
-                    params: {},
-                });
+                navigate('/member');
                 return;
             }
             incrementCartCount();
@@ -246,20 +239,10 @@ export default function HomePage(props: WedaPageProps) {
         }
     };
     const handleProductClick = (product: ProductRecord) => {
-        $w.utils.navigateTo({
-            pageId: 'product-detail',
-            params: {
-                id: product.id,
-            },
-        });
+        navigate(buildPath('/product-detail', { id: product.id }));
     };
     const handleCategoryClick = (category: { id: string; name: string }) => {
-        $w.utils.navigateTo({
-            pageId: 'products',
-            params: {
-                category: category.id,
-            },
-        });
+        navigate(buildPath('/products', { category: category.id }));
     };
     return (
         <div className="min-h-screen page-content-bg pb-20">
@@ -375,12 +358,7 @@ export default function HomePage(props: WedaPageProps) {
                         </h2>
                         <button
                             type="button"
-                            onClick={() =>
-                                $w.utils.navigateTo({
-                                    pageId: 'products',
-                                    params: {},
-                                })
-                            }
+                            onClick={() => navigate('/products')}
                             className="text-sm bg-transparent text-stone-400 hover:text-orange-600"
                         >
                             查看更多 →
@@ -436,12 +414,7 @@ export default function HomePage(props: WedaPageProps) {
                             <p className="text-white/80 text-sm mt-1">首单立减 50 元</p>
                             <button
                                 type="button"
-                                onClick={() =>
-                                    $w.utils.navigateTo({
-                                        pageId: 'member',
-                                        params: {},
-                                    })
-                                }
+                                onClick={() => navigate('/member')}
                                 className="mt-3 px-4 py-1.5 bg-white text-orange-600 text-sm font-semibold rounded-full"
                             >
                                 立即领取

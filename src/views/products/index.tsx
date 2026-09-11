@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import { CategorySidebar, FilterBar } from '@/components/Category';
 import { Header } from '@/components/Header';
@@ -9,10 +9,11 @@ import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
 import { useFavorite } from '@/hooks/useFavorite';
-import { useWeda } from '@/hooks/useWeda';
 import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
 
-import type { ProductRecord, WedaPageProps } from '@/types/weda';
+import { callDataSource } from '@/api';
+import type { ProductRecord } from '@/types/weda';
+import { buildPath } from '@/utils/router';
 
 // 排序选项
 const sortOptions = [
@@ -38,9 +39,9 @@ const sortOptions = [
     },
 ];
 
-export default function ProductsPage(props: WedaPageProps) {
-    const $w = useWeda(props.$w);
+export default function ProductsPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
     /** 本地登录态（由 useUserStore 管理） */
     const isLoggedIn = useUserStore(selectIsLoggedIn);
@@ -49,7 +50,7 @@ export default function ProductsPage(props: WedaPageProps) {
     const [showSearch, setShowSearch] = useState(false);
     // 支持从首页分类入口 / 搜索面板「快速分类」带参进入（/products?category=xxx），首次渲染即选中对应分类
     const [activeCategory, setActiveCategory] = useState<string>(
-        () => ($w.page.dataset.params?.category as string | undefined) ?? 'all',
+        () => searchParams.get('category') ?? 'all',
     );
     const [activeSort, setActiveSort] = useState('recommended');
     const [searchQuery, setSearchQuery] = useState('');
@@ -150,7 +151,7 @@ export default function ProductsPage(props: WedaPageProps) {
                     setLoading(true);
                 }
                 const currentPage = isLoadMore ? pageNumber + 1 : 1;
-                const result = await $w.cloud.callDataSource({
+                const result = await callDataSource({
                     dataSourceName: 'shop_product',
                     methodName: 'wedaGetRecordsV2',
                     params: {
@@ -199,7 +200,7 @@ export default function ProductsPage(props: WedaPageProps) {
                 setLoadingMore(false);
             }
         },
-        [$w.cloud, buildFilter, buildOrderBy, pageNumber, toast],
+        [buildFilter, buildOrderBy, pageNumber, toast],
     );
 
     // 初始化加载
@@ -221,17 +222,14 @@ export default function ProductsPage(props: WedaPageProps) {
 
     // 处理添加购物车
     const handleAddToCart = (product: ProductRecord) => {
-        // 检查是否登录（低代码平台注入的 currentUser 优先，其次取 store 管理的本地登录态）
-        if (!$w.auth.currentUser && !isLoggedIn) {
+        // 检查是否登录（登录态由 useUserStore 管理）
+        if (!isLoggedIn) {
             toast({
                 title: '请先登录',
                 description: '登录后可将商品加入购物车',
                 variant: 'destructive',
             });
-            $w.utils.navigateTo({
-                pageId: 'member',
-                params: {},
-            });
+            navigate('/member');
             return;
         }
         incrementCartCount();
@@ -244,12 +242,7 @@ export default function ProductsPage(props: WedaPageProps) {
 
     // 处理商品点击
     const handleProductClick = (product: ProductRecord) => {
-        $w.utils.navigateTo({
-            pageId: 'product-detail',
-            params: {
-                id: product.id,
-            },
-        });
+        navigate(buildPath('/product-detail', { id: product.id }));
     };
 
     // 处理加载更多
