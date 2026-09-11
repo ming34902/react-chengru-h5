@@ -4,7 +4,6 @@ import { useToast } from '@/components/Toast';
 
 import { selectCollection, selectIsLoggedIn, useUserStore } from '@/stores';
 
-import type { FavoriteModel } from '@/types/api';
 import type { ProductRecord } from '@/types/weda';
 
 /**
@@ -34,7 +33,7 @@ export function useFavorite() {
      * 同一个商品二次点击即取消收藏（store 内部按 id 判断）
      */
     const toggleFavorite = useCallback(
-        (product: FavoriteModel) => {
+        (product: ProductRecord) => {
             if (!isLoggedIn) {
                 toast({
                     title: '请先登录',
@@ -45,7 +44,13 @@ export function useFavorite() {
             }
 
             const favorited = isFavorite(product);
-            toggleCollection(product);
+            // 归一化成收藏模型（商品快照 + 收藏时间，id / name / price 为必填字段）
+            toggleCollection({
+                ...product,
+                id: product.id ?? '',
+                name: product.name ?? '商品',
+                price: product.price,
+            });
             toast({
                 title: favorited ? '已取消收藏' : '收藏成功',
                 description: product.name,

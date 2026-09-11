@@ -20,6 +20,8 @@
         "preview:test": "npm run build:test && vite preview --port 5050",
         "preview:prod": "npm run build:prod && vite preview --port 5050",
         "typecheck": "tsc --noEmit",
+        "generate:apifox": "node scripts/generate-apifox.js",
+        "generate:apifox:check": "node scripts/generate-apifox.js --check",
         "lint:eslint": "eslint --max-warnings 0  \"**/*.{ts,tsx,js,jsx,cjs,mjs}\" --fix",
         "lint:format": "prettier --write \"**/*.{ts,tsx,js,jsx,cjs,mjs,html,scss,css,json}\"",
         "lint:style": "stylelint \"**/*.{css,scss}\" --fix",

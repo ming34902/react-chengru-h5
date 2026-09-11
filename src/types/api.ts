@@ -96,7 +96,7 @@ export interface ProductQuery extends PageQuery {
 // ============================================================================
 
 /** 收藏的商品（商品快照 + 收藏时间，随用户信息一起返回） */
-export interface FavoriteModel extends ProductRecord {
+export interface FavoriteModel extends ProductModel {
     /** 收藏时间（毫秒时间戳） */
     collectedAt?: number;
 }

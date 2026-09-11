@@ -87,6 +87,7 @@ export interface WedaPageProps {
 /** 商品 */
 export interface ProductRecord extends WedaRecord {
     id?: string | number;
+    /** @deprecated 历史字段，请使用 id */
     _id?: string;
     name?: string;
     price: number;
@@ -98,7 +99,9 @@ export interface ProductRecord extends WedaRecord {
     sales?: number;
     stock?: number;
     category?: string;
+    /** @deprecated 历史查询字段，接口响应用 isFeatured */
     is_featured?: boolean;
+    /** @deprecated 历史查询字段，接口响应用 isOnSale */
     is_on_sale?: boolean;
     createdAt?: string;
     /** 秒杀进度（百分比） */
