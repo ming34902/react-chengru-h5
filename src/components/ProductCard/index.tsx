@@ -212,7 +212,8 @@ export function ProductList({
     // 加载状态 - 显示骨架屏
     if (loading) {
         return (
-            <div className="space-y-4">
+            // skeleton-delayed：数据很快返回时骨架屏不出现，避免页面切换时「闪一下」
+            <div className="skeleton-delayed space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                         <ProductCardSkeleton key={i} />

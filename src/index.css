@@ -160,4 +160,28 @@
     .page-content-bg {
         background-color: var(--page-content-bg);
     }
+
+    /**
+     * 延迟显示的骨架屏 / 加载占位（消除页面切换时「闪一下」）
+     *
+     * 现象：本项目数据源（本地 mock / 接口）通常是毫秒级返回的，
+     * 但加载态会先渲染一帧骨架屏，叠加 animate-pulse 的明暗闪烁后被真实内容替换，
+     * 视觉上就是切换页面时"闪一下"。
+     *
+     * 方案：占位默认不可见，真正等待超过 250ms 才淡入 ——
+     * 数据很快返回时占位根本不会出现，慢请求依旧能看到加载态。
+     *
+     * 注意：只加在「包住骨架屏的容器」上（容器自身不要带 animate-pulse），
+     * 否则 animate-pulse 的 animation 会覆盖这里的 reveal 动画。
+     */
+    .skeleton-delayed {
+        opacity: 0;
+        animation: skeleton-delayed-reveal 0.15s ease-out 0.25s forwards;
+    }
+
+    @keyframes skeleton-delayed-reveal {
+        to {
+            opacity: 1;
+        }
+    }
 }

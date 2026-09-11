@@ -303,7 +303,9 @@ export default function ProductsPage() {
 
                     {/* Products Grid */}
                     <div className="p-3">
-                        <div className="mb-3 text-sm text-stone-400">
+                        <div
+                            className={`mb-3 text-sm text-stone-400 ${loading ? 'skeleton-delayed' : ''}`}
+                        >
                             {loading ? '加载中...' : `共 ${total} 个商品`}
                         </div>
                         <ProductList

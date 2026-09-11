@@ -228,7 +228,7 @@ export default function OrderDetailPage() {
         return (
             <div className="min-h-screen page-content-bg">
                 <Header title="订单详情" showBack onBack={() => navigate(-1)} />
-                <div className="mx-4 mt-4 space-y-4">
+                <div className="skeleton-delayed mx-4 mt-4 space-y-4">
                     <div className="bg-white rounded-2xl p-5 animate-pulse">
                         <div className="h-20 bg-gray-200 rounded-xl"></div>
                     </div>

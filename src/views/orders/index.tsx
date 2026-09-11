@@ -246,8 +246,8 @@ export default function OrdersPage() {
             {/* Orders List */}
             <main className="max-w-lg mx-auto px-4 py-4 space-y-4">
                 {loading ? (
-                    // 加载骨架屏
-                    <>
+                    // 加载骨架屏（延迟出现，避免数据很快返回时「闪一下」）
+                    <div className="skeleton-delayed space-y-4">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="bg-white rounded-xl p-4 animate-pulse">
                                 <div className="flex justify-between items-center mb-4">
@@ -267,7 +267,7 @@ export default function OrdersPage() {
                                 </div>
                             </div>
                         ))}
-                    </>
+                    </div>
                 ) : filteredOrders.length === 0 ? (
                     <EmptyOrder type={filterStatus} />
                 ) : (

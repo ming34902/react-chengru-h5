@@ -299,7 +299,7 @@ export default function HomePage() {
                         </div>
                     </div>
                     {loading ? (
-                        <div className="flex gap-3 overflow-x-auto pb-1">
+                        <div className="skeleton-delayed flex gap-3 overflow-x-auto pb-1">
                             {[1, 2, 3, 4].map((i) => (
                                 <div
                                     key={i}
@@ -365,7 +365,7 @@ export default function HomePage() {
                         </button>
                     </div>
                     {loading ? (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="skeleton-delayed grid grid-cols-2 gap-3">
                             {[1, 2, 3, 4].map((i) => (
                                 <div
                                     key={i}

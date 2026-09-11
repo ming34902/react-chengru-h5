@@ -395,9 +395,12 @@ export default function CartPage() {
             <div className="min-h-screen page-content-bg pb-20">
                 <Header title="购物车" />
                 <main className="max-w-lg mx-auto px-4 py-4">
-                    <div className="animate-pulse space-y-3">
+                    <div className="skeleton-delayed space-y-3">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="bg-white rounded-xl p-3 flex gap-3">
+                            <div
+                                key={i}
+                                className="animate-pulse bg-white rounded-xl p-3 flex gap-3"
+                            >
                                 <div className="w-20 h-20 bg-stone-200 rounded-lg" />
                                 <div className="flex-1 space-y-2">
                                     <div className="h-4 bg-stone-200 rounded w-3/4" />
