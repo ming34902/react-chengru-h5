@@ -176,7 +176,7 @@ export function OrderCard({ order, onAction, onClick }: OrderCardProps) {
                                     e.stopPropagation();
                                     onAction?.('delete', order);
                                 }}
-                                className="p-1.5 text-stone-400 hover:text-red-500 transition-colors"
+                                className="p-1.5 bg-transparent text-stone-400 hover:text-red-500 transition-colors"
                                 title="删除订单"
                             >
                                 <Trash2 size={18} />
@@ -192,7 +192,7 @@ export function OrderCard({ order, onAction, onClick }: OrderCardProps) {
                                 e.stopPropagation();
                                 onAction?.('delete', order);
                             }}
-                            className="p-1.5 text-stone-400 hover:text-red-500 transition-colors"
+                            className="p-1.5  text-stone-400 hover:text-red-500 transition-colors"
                             title="删除订单"
                         >
                             <Trash2 size={18} />

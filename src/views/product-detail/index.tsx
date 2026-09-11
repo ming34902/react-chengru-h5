@@ -253,7 +253,7 @@ export default function ProductDetailPage(props: WedaPageProps) {
                 <div className="border-t border-stone-100">
                     <div className="flex items-center justify-between px-5 py-4">
                         <h3 className="font-medium text-stone-800">商品评价</h3>
-                        <button type="button" className="text-sm text-stone-400">
+                        <button type="button" className="text-sm bg-transparent text-stone-400">
                             查看全部 →
                         </button>
                     </div>

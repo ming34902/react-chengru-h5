@@ -306,6 +306,7 @@ export default function ProductsPage(props: WedaPageProps) {
                                 description: '高级筛选功能开发中',
                             })
                         }
+                        
                     />
 
                     {/* Products Grid */}
