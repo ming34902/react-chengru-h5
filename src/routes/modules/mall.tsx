@@ -52,6 +52,11 @@ const routes: routeItem[] = [
                 element: LazyLoad(lazy(() => import('@/views/order-detail'))),
             },
             {
+                path: '/favorites',
+                meta: { title: '我的收藏' },
+                element: LazyLoad(lazy(() => import('@/views/favorites'))),
+            },
+            {
                 path: '/member',
                 meta: { title: '我的' },
                 element: LazyLoad(lazy(() => import('@/views/member/index'))),

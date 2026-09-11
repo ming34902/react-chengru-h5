@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
 import { useWeda } from '@/hooks/useWeda';
+import { selectIsLoggedIn, useUserStore } from '@/stores';
 
 import type { WedaPageProps } from '@/types/weda';
 
@@ -71,7 +72,12 @@ export default function ProductDetailPage(props: WedaPageProps) {
         尺码: 'M',
     });
     const [quantity, setQuantity] = useState(1);
-    const [isCollected, setIsCollected] = useState(false);
+    // 收藏状态统一从 store 读取（user.collection），刷新页面后依然保持
+    const isLoggedIn = useUserStore(selectIsLoggedIn);
+    const isCollected = useUserStore((state) =>
+        (state.user?.collection ?? []).some((item) => String(item.id) === String(productDetail.id)),
+    );
+    const toggleCollection = useUserStore((state) => state.toggleCollection);
     const { toast } = useToast();
     const handleSpecChange = (specName: string, value: string) => {
         setSelectedSpecs((prev) => ({
@@ -104,7 +110,27 @@ export default function ProductDetailPage(props: WedaPageProps) {
         });
     };
     const handleCollect = () => {
-        setIsCollected(!isCollected);
+        if (!isLoggedIn) {
+            toast({
+                title: '请先登录',
+                description: '登录后即可收藏商品',
+                variant: 'destructive',
+            });
+            return;
+        }
+        // 收藏 / 取消收藏：写入 store 中的 user.collection（收藏商品数组）
+        toggleCollection({
+            id: productDetail.id,
+            name: productDetail.name,
+            price: productDetail.price,
+            originalPrice: productDetail.originalPrice,
+            image: productDetail.images[0],
+            images: productDetail.images,
+            description: productDetail.description,
+            rating: productDetail.rating,
+            sales: productDetail.sales,
+            stock: productDetail.stock,
+        });
         toast({
             title: isCollected ? '已取消收藏' : '收藏成功',
             variant: 'success',

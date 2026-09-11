@@ -1,11 +1,14 @@
 import { useCallback, useState } from 'react';
 
-import { Button, Form, Input, Switch } from 'antd-mobile';
+import { Button, Form, Input, Switch, Toast } from 'antd-mobile';
 import { EyeInvisibleOutline, EyeOutline } from 'antd-mobile-icons';
 
 import ClassIcon from '@/components/ClassIcon';
 
 import { useRouter } from '@/hooks/useRouter';
+
+import { authApi } from '@/api';
+import { loginUser } from '@/utils/auth';
 
 import { LoginStateEnum } from '../../index';
 import styles from './index.module.scss';
@@ -19,9 +22,6 @@ interface LoginFormData {
 interface LoginFormProps {
     onStateChange: (state: LoginStateEnum) => void;
 }
-
-// 模拟登录 API 延迟
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 const LoginForm: React.FC<LoginFormProps> = ({ onStateChange }) => {
     const [form] = Form.useForm();
@@ -50,14 +50,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onStateChange }) => {
         async (values: LoginFormData) => {
             setLoading(true);
             try {
-                console.log('登录表单数据:', values);
-                // 模拟登录请求
-                await sleep(3000);
-                // TODO: 替换为实际的登录 API
-                // await loginApi(values);
+                // 伪造登录接口：返回本地模拟的 mock-token，并把用户信息写入 store
+                // （登录态由 useUserStore 统一管理并持久化，刷新页面后不会丢失）
+                const result = await authApi.login({
+                    username: values.username,
+                    password: values.password,
+                });
+                loginUser(result);
                 router.push('/home');
             } catch (error) {
                 console.error('登录失败:', error);
+                Toast.show({ content: (error as Error).message || '登录失败，请稍后重试' });
             } finally {
                 setLoading(false);
             }

@@ -6,6 +6,8 @@ import ClassIcon from '@/components/ClassIcon';
 
 import { useRouter } from '@/hooks/useRouter';
 
+import { logoutUser } from '@/utils/auth';
+
 import styles from './index.module.scss';
 
 function RenderBanner() {
@@ -77,7 +79,10 @@ function RenderCell() {
                     {
                         text: '退出登录',
                         key: 'logout',
-                        onClick: () => {
+                        onClick: async () => {
+                            // 二次确认后执行退出登录：清理本地 mock-token 与 store 登录态
+                            await logoutUser();
+                            setLogoutModal(false);
                             router.replace('/login');
                         },
                     },

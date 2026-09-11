@@ -25,6 +25,7 @@ export const PAGE_ID_TO_PATH: Record<string, string> = {
     'order-detail': '/order-detail',
     checkout: '/checkout',
     member: '/member',
+    favorites: '/favorites',
 };
 
 /** 是否使用本地 mock 数据（由 .env 的 VITE_USE_MOCK 控制） */

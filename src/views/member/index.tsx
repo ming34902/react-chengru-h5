@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useCallback, useEffect, useState } from 'react';
 
+import { Dialog } from 'antd-mobile';
+
 import {
     LoginForm,
     type LoginFormData,
@@ -17,8 +19,11 @@ import {
 import { useToast } from '@/components/Toast';
 
 import { useWeda } from '@/hooks/useWeda';
+import { selectCollection, selectIsLoggedIn, useUserStore } from '@/stores';
 
+import { authApi } from '@/api';
 import type { WedaPageProps } from '@/types/weda';
+import { logoutUser } from '@/utils/auth';
 
 export default function MemberPage(props: WedaPageProps) {
     const $w = useWeda(props.$w);
@@ -36,12 +41,23 @@ export default function MemberPage(props: WedaPageProps) {
         views: 0,
     });
 
-    // 获取当前用户手机号
+    // 登录态统一由 useUserStore 管理（mock-token + user，刷新页面不丢失）
+    const isLoggedInFromStore = useUserStore(selectIsLoggedIn);
+    const storeUser = useUserStore((state) => state.user);
+    /** 收藏商品列表（store 中 user.collection） */
+    const collection = useUserStore(selectCollection);
+    const loginToStore = useUserStore((state) => state.login);
+
+    // 获取当前用户手机号：低代码平台注入的 currentUser 优先，其次用 store 中的登录用户兜底
     const currentUser = props.$w?.auth?.currentUser;
-    const userPhone = currentUser?.name || currentUser?.phone || currentUser?.userId || '';
-    // H5 独立运行时 $w.auth.currentUser 为空，额外用本地登录态兜底（登录/注册成功后置为 true）
-    const [localLoggedIn, setLocalLoggedIn] = useState<boolean>(false);
-    const isLoggedIn = !!userPhone || localLoggedIn;
+    const userPhone =
+        currentUser?.name ||
+        currentUser?.phone ||
+        currentUser?.userId ||
+        storeUser?.phone ||
+        storeUser?.username ||
+        '';
+    const isLoggedIn = !!userPhone || isLoggedInFromStore;
 
     // 查询会员数据
     const fetchMemberData = useCallback(async () => {
@@ -216,7 +232,13 @@ export default function MemberPage(props: WedaPageProps) {
                 // 新用户，创建会员
                 await createMember(phone);
             }
-            setLocalLoggedIn(true);
+            // 伪造登录接口：返回本地模拟的 mock-token + 用户信息（登录态写入 store 并持久化）
+            const loginResult = await authApi.login({
+                username: phone,
+                password: formData.password,
+            });
+            loginToStore(loginResult);
+
             setShowLogin(false);
             toast({
                 title: '登录成功',
@@ -271,7 +293,13 @@ export default function MemberPage(props: WedaPageProps) {
 
             // 创建新会员
             await createMember(phone, nickname);
-            setLocalLoggedIn(true);
+            // 注册成功即登录：伪造接口返回 mock-token 并写入 store
+            const loginResult = await authApi.login({
+                username: phone,
+                password: formData.password,
+            });
+            loginToStore(loginResult);
+
             setShowRegister(false);
             setShowLogin(false);
             toast({
@@ -327,9 +355,10 @@ export default function MemberPage(props: WedaPageProps) {
                 });
                 break;
             case 'favorite':
-                toast({
-                    title: '我的收藏',
-                    description: `${stats.favorites} 件商品`,
+                // 跳转收藏商品列表页面（数据取自 store 中的 user.collection）
+                $w.utils.navigateTo({
+                    pageId: 'favorites',
+                    params: {},
                 });
                 break;
             case 'history':
@@ -357,17 +386,27 @@ export default function MemberPage(props: WedaPageProps) {
                 });
                 break;
             case 'logout':
-                setUser(null);
-                setLocalLoggedIn(false);
-                setStats({
-                    coupons: 0,
-                    points: 0,
-                    favorites: 0,
-                    views: 0,
-                });
-                toast({
-                    title: '已退出登录',
-                    variant: 'success',
+                // 退出登录：先弹二次确认弹窗，点「确定」后再执行退出逻辑
+                Dialog.confirm({
+                    title: '退出登录',
+                    content: '确定要退出当前账号吗？',
+                    confirmText: '确定',
+                    cancelText: '取消',
+                    onConfirm: async () => {
+                        // 清理本地 mock-token + store 中的登录态 / 用户信息 / 收藏
+                        await logoutUser();
+                        setUser(null);
+                        setStats({
+                            coupons: 0,
+                            points: 0,
+                            favorites: 0,
+                            views: 0,
+                        });
+                        toast({
+                            title: '已退出登录',
+                            variant: 'success',
+                        });
+                    },
                 });
                 break;
             default:
@@ -505,7 +544,7 @@ export default function MemberPage(props: WedaPageProps) {
             <MemberHeader user={user} onAvatarClick={handleAvatarClick} loading={loading} />
 
             {/* Member Stats */}
-            <MemberStats stats={stats} />
+            <MemberStats stats={{ ...stats, favorites: collection.length }} />
 
             {/* Member Menu */}
             <MemberMenu onItemClick={handleMenuClick} />

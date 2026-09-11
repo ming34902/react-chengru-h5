@@ -6,6 +6,7 @@
  * - 统一处理 query 参数、超时、JSON 解析、鉴权头与错误抛出
  * - 与低代码数据源的关系：src/api/shop.ts -> src/hooks/useWeda/httpDataSource.ts -> useWeda()
  */
+import { MOCK_TOKEN_KEY } from '@/constants/auth';
 
 /** 环境变量类型（与 src/types/env.d.ts 保持一致） */
 interface ImportMetaEnvLike {
@@ -47,9 +48,14 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
     timeout?: number;
 }
 
-/** 读取本地 token（与路由守卫使用同一份存储） */
+/** 读取本地 token（本地 mock-token 优先，其次模板 token，与路由守卫使用同一份存储） */
 function getToken(): string {
-    return localStorage.getItem('token') ?? env.VITE_APP_API_TOKEN ?? '';
+    return (
+        localStorage.getItem(MOCK_TOKEN_KEY) ??
+        localStorage.getItem('token') ??
+        env.VITE_APP_API_TOKEN ??
+        ''
+    );
 }
 
 /** 拼接完整 URL */

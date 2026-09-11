@@ -6,6 +6,7 @@ import { EmptyOrder, OrderCard, OrderTabs } from '@/components/OrderCard';
 import { useToast } from '@/components/Toast';
 
 import { useWeda } from '@/hooks/useWeda';
+import { useUserStore } from '@/stores';
 
 import type { OrderRecord, WedaPageProps, WedaRecord } from '@/types/weda';
 
@@ -23,12 +24,14 @@ export default function OrdersPage(props: WedaPageProps) {
     const { toast } = useToast();
 
     // 获取当前用户手机号
+    const storeUser = useUserStore((state) => state.user);
     const getUserPhone = () => {
         const user = props.$w?.auth?.currentUser;
         if (user) {
             return user.name || '';
         }
-        return localStorage.getItem('user_phone') || '';
+        // 本地登录态（store 管理）兜底，最后读取历史存储
+        return storeUser?.phone || storeUser?.username || localStorage.getItem('user_phone') || '';
     };
 
     // 查询订单数据

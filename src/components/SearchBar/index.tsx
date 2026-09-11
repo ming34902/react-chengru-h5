@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Clock, Search, TrendingUp, X } from 'lucide-react';
 
@@ -11,10 +12,19 @@ export interface SearchBarProps {
     showHistory?: boolean;
     /** 输入框占位文案 */
     placeholder?: string;
+    /**
+     * 点击快速分类（回传分类 id）
+     *
+     * 不传时使用默认行为：跳转到商品列表 /products?category=xxx，
+     * 由商品列表读取该参数选中对应的分类项。
+     */
+    onCategorySelect?: (categoryId: string) => void;
 }
 
-/** 快速分类入口 */
+/** 快速分类入口（id 与商品列表左侧分类 src/components/Category 的 CategoryItem.id 一一对应） */
 interface QuickCategory {
+    /** 分类 id（= 商品列表的分类 id，用于跳转后选中对应分类项） */
+    id: string;
     name: string;
     icon: string;
 }
@@ -39,14 +49,19 @@ function readSearchHistory(): string[] {
 /** 热门搜索词 */
 const popularSearches: string[] = ['连衣裙', '运动鞋', '护肤套装', '智能手表', '零食大礼包'];
 
-/** 快速分类 */
+/**
+ * 快速分类
+ *
+ * id 必须与商品列表左侧分类（src/components/Category 的 defaultCategories）保持一致，
+ * 这样点击后跳转到商品列表才能正确选中对应的分类项。
+ */
 const quickCategories: QuickCategory[] = [
-    { name: '服饰', icon: '👗' },
-    { name: '美妆', icon: '💄' },
-    { name: '数码', icon: '📱' },
-    { name: '家居', icon: '🏠' },
-    { name: '食品', icon: '🍪' },
-    { name: '运动', icon: '⚽' },
+    { id: 'clothing', name: '服饰', icon: '👗' },
+    { id: 'beauty', name: '美妆', icon: '💄' },
+    { id: 'digital', name: '数码', icon: '📱' },
+    { id: 'home', name: '家居', icon: '🏠' },
+    { id: 'food', name: '食品', icon: '🍪' },
+    { id: 'sports', name: '运动', icon: '⚽' },
 ];
 
 export function SearchBar({
@@ -54,7 +69,9 @@ export function SearchBar({
     onClose,
     showHistory = true,
     placeholder = '搜索商品',
+    onCategorySelect,
 }: SearchBarProps) {
+    const navigate = useNavigate();
     const [query, setQuery] = useState<string>('');
     const [recentSearches, setRecentSearches] = useState<string[]>(readSearchHistory);
 
@@ -81,6 +98,22 @@ export function SearchBar({
         const updated = recentSearches.filter((searchItem) => searchItem !== item);
         setRecentSearches(updated);
         localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+    };
+
+    /**
+     * 点击快速分类
+     *
+     * 优先交给使用方处理（商品列表页在本地选中分类，不需要跳转）；
+     * 没有传 onCategorySelect 时走默认行为：跳转到商品列表并带上分类参数，
+     * 商品列表会根据 ?category=xxx 选中对应的分类项。
+     */
+    const handleCategoryClick = (category: QuickCategory) => {
+        if (onCategorySelect) {
+            onCategorySelect(category.id);
+            return;
+        }
+        onClose?.();
+        navigate(`/products?category=${encodeURIComponent(category.id)}`);
     };
 
     return (
@@ -184,8 +217,8 @@ export function SearchBar({
                         {quickCategories.map((category) => (
                             <button
                                 type="button"
-                                key={category.name}
-                                onClick={() => handleSearch(category.name)}
+                                key={category.id}
+                                onClick={() => handleCategoryClick(category)}
                                 className="flex flex-col items-center gap-1 p-4 bg-white rounded-xl border border-stone-100 hover:border-primary-200 hover:bg-primary-50 transition-colors"
                             >
                                 <span className="text-2xl">{category.icon}</span>

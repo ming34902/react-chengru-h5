@@ -8,7 +8,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
 import { useWeda } from '@/hooks/useWeda';
-import { useAppStore } from '@/stores';
+import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
 
 import type { ProductRecord, WedaPageProps, WedaRecord } from '@/types/weda';
 
@@ -86,6 +86,8 @@ const banners = [
 export default function HomePage(props: WedaPageProps) {
     const $w = useWeda(props.$w);
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
+    /** 本地登录态（由 useUserStore 管理，登录成功后刷新页面不丢失） */
+    const isLoggedInFromStore = useUserStore(selectIsLoggedIn);
     const { toast } = useToast();
     const [showSearch, setShowSearch] = useState(false);
 
@@ -211,9 +213,9 @@ export default function HomePage(props: WedaPageProps) {
     };
     const handleAddToCart = async (product: ProductRecord) => {
         try {
-            // 获取当前用户
+            // 获取当前用户（低代码平台注入的 currentUser 优先，其次取 store 管理的本地登录态）
             const currentUser = $w.auth.currentUser;
-            if (!currentUser) {
+            if (!currentUser && !isLoggedInFromStore) {
                 toast({
                     title: '提示',
                     description: '请先登录后再添加购物车',

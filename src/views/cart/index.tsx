@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { useToast } from '@/components/Toast';
 
 import { useWeda } from '@/hooks/useWeda';
-import { useAppStore } from '@/stores';
+import { useAppStore, useUserStore } from '@/stores';
 
 import type { CartRecord, WedaPageProps } from '@/types/weda';
 
@@ -62,9 +62,11 @@ export default function CartPage(props: WedaPageProps) {
     const [initialLoad, setInitialLoad] = useState(true);
     const { toast } = useToast();
 
-    // 获取当前用户
+    // 获取当前用户（低代码平台注入的 currentUser 优先，其次取 store 管理的本地登录态）
+    const storeUser = useUserStore((state) => state.user);
     const currentUser = auth?.currentUser;
-    const userPhone = currentUser?.name || currentUser?.phone || '';
+    const userPhone =
+        currentUser?.name || currentUser?.phone || storeUser?.phone || storeUser?.username || '';
 
     // 查询真实购物车数据
     const fetchCartItems = async () => {
@@ -413,14 +415,18 @@ export default function CartPage(props: WedaPageProps) {
     }
     return (
         <div className="min-h-screen bg-background pb-20">
-            <Header title="购物车" />
+            {/*
+                吸顶区域：把 Header 与「全选 / 共计商品」栏放进同一个 sticky 容器
+                —— 整个吸顶区只有一个 top-0 的吸顶偏移（整数），不会再出现
+                   「Header(top-0) + 全选栏(top-14)」两个吸顶元素在滚动时
+                   因小数像素取整而互相错位、抖动 / 露缝的问题。
+            */}
+            <div className="sticky sticky-fix-keep-px top-0 z-40 bg-white">
+                <Header title="购物车" />
 
-            {cartItems.length === 0 ? (
-                <EmptyCart />
-            ) : (
-                <>
-                    {/* Select All Header */}
-                    <div className="sticky sticky-fix-keep-px top-14 z-20 border-b border-stone-100 bg-white">
+                {cartItems.length > 0 && (
+                    /* Select All Header */
+                    <div className="border-b border-stone-100 bg-white">
                         <div className="flex items-center justify-between h-12 px-4 max-w-lg mx-auto">
                             <button
                                 type="button"
@@ -443,7 +449,13 @@ export default function CartPage(props: WedaPageProps) {
                             </span>
                         </div>
                     </div>
+                )}
+            </div>
 
+            {cartItems.length === 0 ? (
+                <EmptyCart />
+            ) : (
+                <>
                     {/* Cart Items */}
                     <main className="max-w-lg mx-auto px-4 py-4 space-y-3 pb-40">
                         {cartItems.map((item) => (

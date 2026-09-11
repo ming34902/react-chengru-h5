@@ -77,21 +77,26 @@
 
 @layer components {
     /**
-     * 吸顶栏修复（防抖动 + 消除顶部 1px 缝隙）
+     * 吸顶栏修复（消除滚动抖动 + 顶部 1px 缝隙）
      *
-     * 问题：项目按 px 书写、由 postcss-mobile-forever 统一转 vw（如 h-14 → 14.93333vw），
-     * 会产生小数像素；配合半透明背景 + backdrop-blur，滚动时吸顶栏顶部会出现约 1px 的缝隙，
-     * 把下层滚动内容透出来（首页搜索 header、商品页筛选栏、购物车全选栏等）。
+     * 背景：项目按 px 书写、由 postcss-mobile-forever 统一转 vw（如 h-14 → 59.73333vw、
+     * top-14 → 14.93333vw），所以吸顶栏的高度 / top 在非 375 宽的设备上是小数像素。
+     *
+     * 抖动原因：不要给 position: sticky 的元素加 will-change: transform / translateZ(0)。
+     * 这两个属性会把吸顶栏提升为独立合成层，而合成层的位置会被吸附到整数设备像素；
+     * 当吸顶栏 top 是小数时（如 top-14 → 14.93333vw），滚动过程中元素会在相邻两个整数
+     * 像素之间反复取整，表现为 1px 上下抖动 —— 购物车「全选 / 共计商品」栏（原实现 top-14）
+     * 就是这么抖的；Header 的 top 是 0（整数）所以看不出问题。
      *
      * 方案：
-     * 1. 独立合成层（will-change/translateZ）：吸顶元素按整数设备像素对齐，消除抖动与露缝
-     * 2. 不透明兜底背景：即使存在亚像素误差，也只会露出白底而不是下层内容（可被工具类覆盖）
-     * 3. ::before 向上多覆盖 1px：解决上下相邻两个吸顶栏之间（如 Header + 筛选栏）的接缝
+     * 1. 不做图层提升（去掉 will-change / translateZ），让吸顶栏按小数像素精确贴住滚动位置
+     * 2. 不透明兜底背景：即使存在亚像素误差，也只会露出白底而不是下层滚动内容（可被工具类覆盖）
+     * 3. overflow-anchor: none：关闭滚动锚定，避免列表内容变化时把吸顶栏顶偏
+     * 4. ::before 向上多覆盖 1px：解决上下相邻两个吸顶栏之间（如 Header + 筛选栏）的接缝
      */
     .sticky-fix-keep-px {
         background-color: #fff;
-        will-change: transform;
-        transform: translateZ(0);
+        overflow-anchor: none;
     }
 
     .sticky-fix-keep-px::before {

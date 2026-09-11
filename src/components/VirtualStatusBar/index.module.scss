@@ -13,6 +13,10 @@
     // 只在屏幕宽度 >= 576px 时显示
     @media screen and (width >= 576px) {
         display: block;
+
+        // PC 端 body 带 transform: scale(0.8)（见 global.scss），1px 会被缩成 0.8px，
+        // 因此这里向下多覆盖 2px，盖住与吸顶 header 之间的亚像素缝隙（否则会露出下层滚动内容）
+        height: calc(30px + 2px);
     }
 
     :global {

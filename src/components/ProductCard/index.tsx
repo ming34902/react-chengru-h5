@@ -11,6 +11,10 @@ export interface ProductCardProps {
     onClick?: (product: ProductRecord) => void;
     /** 是否展示快捷加购按钮 */
     showQuickAdd?: boolean;
+    /** 是否已收藏（收藏列表页传入） */
+    isFavorite?: boolean;
+    /** 点击收藏 / 取消收藏 */
+    onToggleFavorite?: (product: ProductRecord) => void;
 }
 
 export function ProductCard({
@@ -18,11 +22,17 @@ export function ProductCard({
     onAddToCart,
     onClick,
     showQuickAdd = true,
+    isFavorite = false,
+    onToggleFavorite,
 }: ProductCardProps) {
     const rating = Number(product.rating ?? 0);
     const handleQuickAdd = (e: React.MouseEvent) => {
         e.stopPropagation();
         onAddToCart?.(product);
+    };
+    const handleToggleFavorite = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onToggleFavorite?.(product);
     };
     return (
         <div onClick={() => onClick?.(product)} className="group cursor-pointer">
@@ -38,12 +48,17 @@ export function ProductCard({
                     {/* Wishlist Button */}
                     <button
                         type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                        }}
+                        onClick={handleToggleFavorite}
+                        aria-label={isFavorite ? '取消收藏' : '收藏'}
                         className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
                     >
-                        <Heart className="w-4 h-4 text-stone-400 hover:text-secondary-500 transition-colors" />
+                        <Heart
+                            className={`w-4 h-4 transition-colors ${
+                                isFavorite
+                                    ? 'text-secondary-500 fill-secondary-500'
+                                    : 'text-stone-400 hover:text-secondary-500'
+                            }`}
+                        />
                     </button>
 
                     {/* Sale Tag */}
@@ -177,6 +192,10 @@ export interface ProductListProps {
     loading?: boolean;
     /** 加载更多中 */
     loadingMore?: boolean;
+    /** 判断商品是否已收藏 */
+    isFavorite?: (product: ProductRecord) => boolean;
+    /** 收藏 / 取消收藏 */
+    onToggleFavorite?: (product: ProductRecord) => void;
 }
 
 export function ProductList({
@@ -187,6 +206,8 @@ export function ProductList({
     hasMore,
     loading = false,
     loadingMore = false,
+    isFavorite,
+    onToggleFavorite,
 }: ProductListProps) {
     // 加载状态 - 显示骨架屏
     if (loading) {
@@ -214,6 +235,8 @@ export function ProductList({
                         product={product}
                         onClick={onProductClick}
                         onAddToCart={onAddToCart}
+                        isFavorite={isFavorite?.(product) ?? false}
+                        onToggleFavorite={onToggleFavorite}
                     />
                 ))}
             </div>

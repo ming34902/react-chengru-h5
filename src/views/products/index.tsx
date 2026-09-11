@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps -- 低代码生成页面：副作用依赖数组按平台生成逻辑保留原样 */
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { CategorySidebar, FilterBar } from '@/components/Category';
 import { Header } from '@/components/Header';
@@ -8,7 +9,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { useToast } from '@/components/Toast';
 
 import { useWeda } from '@/hooks/useWeda';
-import { useAppStore } from '@/stores';
+import { selectIsLoggedIn, useAppStore, useUserStore } from '@/stores';
 
 import type { ProductRecord, WedaPageProps } from '@/types/weda';
 
@@ -38,9 +39,12 @@ const sortOptions = [
 
 export default function ProductsPage(props: WedaPageProps) {
     const $w = useWeda(props.$w);
+    const navigate = useNavigate();
     const incrementCartCount = useAppStore((state) => state.incrementCartCount);
+    /** 本地登录态（由 useUserStore 管理） */
+    const isLoggedIn = useUserStore(selectIsLoggedIn);
     const [showSearch, setShowSearch] = useState(false);
-    // 支持从首页分类入口带参进入（/products?category=xxx），首次渲染即选中对应分类
+    // 支持从首页分类入口 / 搜索面板「快速分类」带参进入（/products?category=xxx），首次渲染即选中对应分类
     const [activeCategory, setActiveCategory] = useState<string>(
         () => ($w.page.dataset.params?.category as string | undefined) ?? 'all',
     );
@@ -214,8 +218,8 @@ export default function ProductsPage(props: WedaPageProps) {
 
     // 处理添加购物车
     const handleAddToCart = (product: ProductRecord) => {
-        // 检查是否登录
-        if (!$w.auth.currentUser) {
+        // 检查是否登录（低代码平台注入的 currentUser 优先，其次取 store 管理的本地登录态）
+        if (!$w.auth.currentUser && !isLoggedIn) {
             toast({
                 title: '请先登录',
                 description: '登录后可将商品加入购物车',
@@ -256,6 +260,19 @@ export default function ProductsPage(props: WedaPageProps) {
     const handleCategoryChange = (categoryId: string) => {
         setActiveCategory(categoryId);
         setSearchQuery('');
+    };
+
+    /**
+     * 搜索面板「快速分类」点击
+     *
+     * 快速分类携带的是商品分类 id，直接选中左侧对应的分类项（无需跳转，本页即商品列表），
+     * 如果此时 URL 上已有其它 category 参数，用 replace 同步一次，保证地址栏与选中态一致。
+     */
+    const handleQuickCategorySelect = (categoryId: string) => {
+        setShowSearch(false);
+        setSearchQuery('');
+        setActiveCategory(categoryId);
+        navigate(`/products?category=${encodeURIComponent(categoryId)}`, { replace: true });
     };
     return (
         <div className="min-h-screen bg-background pb-20 ">
@@ -307,7 +324,11 @@ export default function ProductsPage(props: WedaPageProps) {
             </div>
 
             {showSearch && (
-                <SearchBar onSearch={handleSearch} onClose={() => setShowSearch(false)} />
+                <SearchBar
+                    onSearch={handleSearch}
+                    onClose={() => setShowSearch(false)}
+                    onCategorySelect={handleQuickCategorySelect}
+                />
             )}
         </div>
     );
